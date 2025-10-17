@@ -24,6 +24,7 @@ langchain-core = "^0.3.76"
 openai = "^1.88.0"
 pydantic = "^2.11.7"
 httpx = "^0.27.0"
+parallel-web = {git = "ssh://git@github.com/shapleyai/parallel-sdk-internal-python.git"}
 
 [tool.ruff]
 target-version = "py39"

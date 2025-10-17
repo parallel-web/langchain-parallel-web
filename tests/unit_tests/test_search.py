@@ -1,6 +1,6 @@
 """Unit tests for Parallel AI Search functionality."""
 
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -150,15 +150,17 @@ class TestParallelWebSearchTool:
             assert "query_count" in metadata
             assert metadata["query_count"] == 2
 
-    @patch("langchain_parallel_web.tools.get_search_client")
-    async def test_async_functionality(self, mock_get_client: Mock) -> None:
+    @patch("langchain_parallel_web.tools.get_async_search_client")
+    async def test_async_functionality(self, mock_get_async_client: Mock) -> None:
         """Test async search functionality."""
         mock_client = Mock()
-        mock_client.search.return_value = {
-            "search_id": "async-test-123",
-            "results": [{"url": "https://example.com", "title": "Async Test"}],
-        }
-        mock_get_client.return_value = mock_client
+        mock_client.search = AsyncMock(
+            return_value={
+                "search_id": "async-test-123",
+                "results": [{"url": "https://example.com", "title": "Async Test"}],
+            }
+        )
+        mock_get_async_client.return_value = mock_client
 
         with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
             tool = ParallelWebSearchTool()

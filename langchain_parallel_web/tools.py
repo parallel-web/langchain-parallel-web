@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from datetime import datetime
 from typing import Any, Literal, Optional, Union
 
@@ -13,7 +12,7 @@ from langchain_core.callbacks import (
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, SecretStr, model_validator
 
-from ._client import get_api_key, get_search_client
+from ._client import get_api_key, get_async_search_client, get_search_client
 
 
 class ParallelWebSearchInput(BaseModel):
@@ -456,8 +455,8 @@ class ParallelWebSearchTool(BaseTool):
             self.api_key.get_secret_value() if self.api_key else None
         )
 
-        # Initialize search client
-        client = get_search_client(api_key_str, self.base_url)
+        # Initialize async search client
+        client = get_async_search_client(api_key_str, self.base_url)
 
         search_params = {
             "objective": objective,
@@ -476,18 +475,14 @@ class ParallelWebSearchTool(BaseTool):
                     color="yellow",
                 )
 
-            # Run search in executor to avoid blocking the event loop
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: client.search(
-                    objective=objective,
-                    search_queries=search_queries,
-                    processor=processor,
-                    max_results=max_results,
-                    max_chars_per_result=max_chars_per_result,
-                    source_policy=source_policy,
-                ),
+            # Use the async client directly for better performance
+            response = await client.search(
+                objective=objective,
+                search_queries=search_queries,
+                processor=processor,
+                max_results=max_results,
+                max_chars_per_result=max_chars_per_result,
+                source_policy=source_policy,
             )
 
             # Create metadata

@@ -1109,6 +1109,33 @@ files = [
 ]
 
 [[package]]
+name = "parallel-web"
+version = "0.2.1"
+description = "The official Python library for the Parallel API"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = []
+develop = false
+
+[package.dependencies]
+anyio = ">=3.5.0,<5"
+distro = ">=1.7.0,<2"
+httpx = ">=0.23.0,<1"
+pydantic = ">=1.9.0,<3"
+sniffio = "*"
+typing-extensions = ">=4.10,<5"
+
+[package.extras]
+aiohttp = ["aiohttp", "httpx-aiohttp (>=0.1.8)"]
+
+[package.source]
+type = "git"
+url = "ssh://git@github.com/shapleyai/parallel-sdk-internal-python.git"
+reference = "HEAD"
+resolved_reference = "9fc83fe897a5174a6f71968353623a42150c9522"
+
+[[package]]
 name = "pathspec"
 version = "0.12.1"
 description = "Utility library for gitignore style pattern matching of file paths."
@@ -2346,4 +2373,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<4.0"
-content-hash = "43a601bfa157999a63cce4741fce60ad6ac0ac0659049b798d5acc97e387fe35"
+content-hash = "e2e57a88edf6de1a94ae76c2df613ebe7bbade0e1822063a8837e03ed46efdd9"
