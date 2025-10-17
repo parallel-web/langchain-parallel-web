@@ -1,11 +1,11 @@
 # LangChain Parallel Web Integration
 
-This package provides LangChain integrations for [Parallel AI](https://docs.parallel.ai/), enabling real-time web research and AI capabilities through an OpenAI-compatible interface.
+This package provides LangChain integrations for [Parallel](https://docs.parallel.ai/), enabling real-time web research and AI capabilities through an OpenAI-compatible interface.
 
 ## Features
 
 - **Chat Models**: `ChatParallelWeb` - Real-time web research chat completions
-- **Search Tools**: `ParallelWebSearchTool` - Direct access to Parallel AI's Search API
+- **Search Tools**: `ParallelWebSearchTool` - Direct access to Parallel's Search API
 - **Extract Tools**: `ParallelExtractTool` - Clean content extraction from web pages
 - **Streaming Support**: Real-time response streaming
 - **Async/Await**: Full asynchronous operation support
@@ -20,7 +20,7 @@ pip install langchain-parallel-web
 
 ## Setup
 
-1. Get your API key from [Parallel AI](https://parallel.ai/)
+1. Get your API key from [Parallel](https://parallel.ai/)
 2. Set your API key as an environment variable:
 
 ```bash
@@ -31,7 +31,7 @@ export PARALLEL_AI_API_KEY="your-api-key-here"
 
 ### ChatParallelWeb
 
-The `ChatParallelWeb` class provides access to Parallel AI's Chat API, which combines language models with real-time web research capabilities.
+The `ChatParallelWeb` class provides access to Parallel's Chat API, which combines language models with real-time web research capabilities.
 
 #### Basic Usage
 
@@ -41,9 +41,9 @@ from langchain_parallel_web.chat_models import ChatParallelWeb
 
 # Initialize the chat model
 chat = ChatParallelWeb(
-    model="speed",  # Parallel AI's chat model
-    temperature=0.7,  # Optional: ignored by Parallel AI
-    max_tokens=None,  # Optional: ignored by Parallel AI
+    model="speed",  # Parallel's chat model
+    temperature=0.7,  # Optional: ignored by Parallel
+    max_tokens=None,  # Optional: ignored by Parallel
 )
 
 # Create messages
@@ -107,18 +107,18 @@ print(response.content)
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `model` | `str` | `"speed"` | Parallel AI model name |
+| `model` | `str` | `"speed"` | Parallel model name |
 | `api_key` | `Optional[SecretStr]` | `None` | API key (uses `PARALLEL_AI_API_KEY` env var if not provided) |
 | `base_url` | `str` | `"https://api.parallel.ai"` | API base URL |
-| `temperature` | `Optional[float]` | `None` | Sampling temperature (ignored by Parallel AI) |
-| `max_tokens` | `Optional[int]` | `None` | Max tokens (ignored by Parallel AI) |
+| `temperature` | `Optional[float]` | `None` | Sampling temperature (ignored by Parallel) |
+| `max_tokens` | `Optional[int]` | `None` | Max tokens (ignored by Parallel) |
 | `timeout` | `Optional[float]` | `None` | Request timeout |
 | `max_retries` | `int` | `2` | Max retry attempts |
 
 
 ## Real-Time Web Research
 
-Parallel AI's Chat API provides real-time access to web information, making it perfect for:
+Parallel's Chat API provides real-time access to web information, making it perfect for:
 
 - **Current Events**: Get up-to-date information about recent events
 - **Market Data**: Access current stock prices, market trends
@@ -178,11 +178,11 @@ prompt = ChatPromptTemplate.from_messages([
 
 ## Search API
 
-The Search API provides direct access to Parallel AI's web search capabilities, returning structured, compressed excerpts optimized for LLM consumption.
+The Search API provides direct access to Parallel's web search capabilities, returning structured, compressed excerpts optimized for LLM consumption.
 
 ### ParallelWebSearchTool
 
-The search tool provides direct access to Parallel AI's Search API:
+The search tool provides direct access to Parallel's Search API:
 
 ```python
 from langchain_parallel_web import ParallelWebSearchTool
@@ -416,10 +416,10 @@ See the `examples/` and `docs/` directories for complete working examples:
 
 ## API Compatibility
 
-This integration provides access to two Parallel AI APIs:
+This integration provides access to two Parallel APIs:
 
 ### Chat API Compatibility
-The Chat API uses Parallel AI's OpenAI-compatible interface:
+The Chat API uses Parallel's OpenAI-compatible interface:
 
 - **Supported**: Messages, streaming, response_format (JSON schema)
 - **Ignored**: temperature, max_tokens, top_p, stop, most OpenAI-specific parameters
@@ -456,7 +456,7 @@ The Search API offers two processor tiers with different performance characteris
 | **pro** | 45-70s | $9 | 40 | Research, comprehensive analysis |
 
 ### Production Usage
-Contact [Parallel AI](https://parallel.ai/) for:
+Contact [Parallel](https://parallel.ai/) for:
 - Higher rate limits
 - Enterprise features
 - Custom processor configurations
@@ -472,14 +472,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 ### Documentation
-- [Parallel AI Documentation](https://docs.parallel.ai/)
+- [Parallel Documentation](https://docs.parallel.ai/)
 - [Chat API Reference](https://docs.parallel.ai/chat-api)
 - [Search API Reference](https://docs.parallel.ai/search-api)
 - [LangChain Documentation](https://python.langchain.com/)
 
 ### Getting Help
 - [GitHub Issues](https://github.com/parallel-web/langchain-parallel-web/issues)
-- [Parallel AI Support](mailto:support@parallel.ai)
+- [Parallel Support](mailto:support@parallel.ai)
 
 ## Changelog
 

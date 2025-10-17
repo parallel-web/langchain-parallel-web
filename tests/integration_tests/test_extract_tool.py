@@ -1,4 +1,4 @@
-"""Integration tests for Parallel AI Extract Tool."""
+"""Integration tests for Parallel Extract Tool."""
 
 import os
 

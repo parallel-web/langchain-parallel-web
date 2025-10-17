@@ -61,9 +61,9 @@ class ParallelWebSearchInput(BaseModel):
 
 
 class ParallelWebSearchTool(BaseTool):
-    """Parallel AI Search tool with web research capabilities.
+    """Parallel Search tool with web research capabilities.
 
-    This tool provides access to Parallel AI's Search API, which streamlines
+    This tool provides access to Parallel's Search API, which streamlines
     the traditional search → scrape → extract pipeline into a single API call.
     Features include domain filtering, multiple processors, async support,
     and metadata collection.
@@ -79,10 +79,10 @@ class ParallelWebSearchTool(BaseTool):
 
     Key init args:
         api_key: Optional[SecretStr]
-            Parallel AI API key. If not provided, will be read from
+            Parallel API key. If not provided, will be read from
             PARALLEL_AI_API_KEY env var.
         base_url: str
-            Base URL for Parallel AI API. Defaults to "https://api.parallel.ai".
+            Base URL for Parallel API. Defaults to "https://api.parallel.ai".
 
     Instantiation:
         .. code-block:: python
@@ -201,7 +201,7 @@ class ParallelWebSearchTool(BaseTool):
     """The name that is passed to the model when performing tool calling."""
 
     description: str = (
-        "Search the web using Parallel AI's Search API. "
+        "Search the web using Parallel's Search API. "
         "Provides real-time web information with compressed, structured excerpts "
         "optimized for LLM consumption. Supports domain filtering, multiple processors, "  # noqa: E501
         "and metadata. Specify either an objective "
@@ -213,11 +213,11 @@ class ParallelWebSearchTool(BaseTool):
     """The schema that is passed to the model when performing tool calling."""
 
     api_key: Optional[SecretStr] = Field(default=None)
-    """Parallel AI API key. If not provided, will be read from
+    """Parallel API key. If not provided, will be read from
     PARALLEL_AI_API_KEY env var."""
 
     base_url: str = Field(default="https://api.parallel.ai")
-    """Base URL for Parallel AI API."""
+    """Base URL for Parallel API."""
 
     @model_validator(mode="before")
     @classmethod
@@ -320,7 +320,7 @@ class ParallelWebSearchTool(BaseTool):
         timeout: Optional[int] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> dict[str, Any]:
-        """Execute the search using Parallel AI's Search API.
+        """Execute the search using Parallel's Search API.
 
         Args:
             objective: Natural-language description of the research goal
@@ -404,7 +404,7 @@ class ParallelWebSearchTool(BaseTool):
             # Notify callback manager about error
             if run_manager:
                 run_manager.on_text(f"Search failed: {e!s}\n", color="red")
-            msg = f"Error calling Parallel AI Search API: {e!s}"
+            msg = f"Error calling Parallel Search API: {e!s}"
             raise ValueError(msg) from e
 
     async def _arun(
@@ -420,7 +420,7 @@ class ParallelWebSearchTool(BaseTool):
         timeout: Optional[int] = None,
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> dict[str, Any]:
-        """Async execute the search using Parallel AI's Search API.
+        """Async execute the search using Parallel's Search API.
 
         Args:
             objective: Natural-language description of the research goal
@@ -507,5 +507,5 @@ class ParallelWebSearchTool(BaseTool):
             # Notify callback manager about error
             if run_manager:
                 await run_manager.on_text(f"Async search failed: {e!s}\n", color="red")
-            msg = f"Error calling Parallel AI Search API: {e!s}"
+            msg = f"Error calling Parallel Search API: {e!s}"
             raise ValueError(msg) from e

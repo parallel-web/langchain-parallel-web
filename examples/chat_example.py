@@ -1,4 +1,4 @@
-"""Example usage of Parallel AI Chat integration."""
+"""Example usage of Parallel Chat integration."""
 
 from __future__ import annotations
 
@@ -18,9 +18,9 @@ def basic_example() -> None:
 
     # Initialize the chat model
     chat = ChatParallelWeb(
-        model_name="speed",  # Parallel AI's chat model
-        temperature=0.7,  # Optional: temperature (ignored by Parallel AI)
-        max_tokens=None,  # Optional: max tokens (ignored by Parallel AI)
+        model_name="speed",  # Parallel's chat model
+        temperature=0.7,  # Optional: temperature (ignored by Parallel)
+        max_tokens=None,  # Optional: max tokens (ignored by Parallel)
     )
 
     # Create messages
@@ -162,7 +162,7 @@ def conversation_example() -> None:
 
 def main() -> None:
     """Run all examples."""
-    print("=== Parallel AI Chat Examples ===")
+    print("=== Parallel Chat Examples ===")
 
     # Check if API key is set
     if not os.getenv("PARALLEL_AI_API_KEY"):

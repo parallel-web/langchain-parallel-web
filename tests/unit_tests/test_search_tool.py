@@ -1,4 +1,4 @@
-"""Unit tests for Parallel AI Search functionality."""
+"""Unit tests for Parallel Search functionality."""
 
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -17,7 +17,7 @@ class TestParallelWebSearchTool:
         ):
             tool = ParallelWebSearchTool()
             assert tool.name == "parallel_web_search"
-            assert "Search the web using Parallel AI" in tool.description
+            assert "Search the web using Parallel" in tool.description
 
     def test_tool_validation_requires_objective_or_queries(self) -> None:
         """Test that tool validates input requirements."""
@@ -138,7 +138,7 @@ class TestParallelWebSearchTool:
             tool = ParallelWebSearchTool()
 
             with pytest.raises(
-                ValueError, match="Error calling Parallel AI Search API: API Error"
+                ValueError, match="Error calling Parallel Search API: API Error"
             ):
                 tool._run(objective="test search")
 

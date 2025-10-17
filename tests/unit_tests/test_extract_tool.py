@@ -1,4 +1,4 @@
-"""Unit tests for Parallel AI Extract Tool."""
+"""Unit tests for Parallel Extract Tool."""
 
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -174,7 +174,7 @@ class TestParallelExtractTool:
             tool = ParallelExtractTool()
 
             with pytest.raises(
-                ValueError, match="Error calling Parallel AI Extract API: API Error"
+                ValueError, match="Error calling Parallel Extract API: API Error"
             ):
                 tool.invoke({"urls": ["https://example.com"]})
 

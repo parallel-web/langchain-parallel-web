@@ -12,12 +12,12 @@ Both integrations follow the official [LangChain standard testing framework](htt
 ## Architecture
 
 ### Chat Model (ChatParallelWeb)
-- **OpenAI Compatibility**: Uses OpenAI-compatible interface with Parallel AI endpoint
+- **OpenAI Compatibility**: Uses OpenAI-compatible interface with Parallel endpoint
 - **Message Handling**: Automatic message merging for API compliance
 - **LangChain Integration**: Full metadata support (`lc_secrets`, `lc_attributes`, etc.)
 
 ### Search Tool (ParallelWebSearchTool)
-- **Direct API Access**: Direct integration with Parallel AI Search API
+- **Direct API Access**: Direct integration with Parallel Search API
 - **Input Validation**: Comprehensive parameter validation
 - **Metadata Collection**: Search timing, result counts, processor information
 - **Async Support**: Full async/await support with proper event loop handling

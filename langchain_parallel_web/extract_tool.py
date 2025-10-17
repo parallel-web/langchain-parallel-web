@@ -1,4 +1,4 @@
-"""Parallel AI Extract Tool for LangChain."""
+"""Parallel Extract Tool for LangChain."""
 
 from __future__ import annotations
 
@@ -62,7 +62,7 @@ class FetchPolicy(BaseModel):
 
 
 class ParallelExtractInput(BaseModel):
-    """Input schema for Parallel AI Extract Tool."""
+    """Input schema for Parallel Extract Tool."""
 
     urls: list[str] = Field(description="List of URLs to extract content from")
 
@@ -107,10 +107,10 @@ class ParallelExtractInput(BaseModel):
 
 
 class ParallelExtractTool(BaseTool):
-    """Parallel AI Extract Tool.
+    """Parallel Extract Tool.
 
     This tool extracts clean, structured content from web pages using the
-    Parallel AI Extract API.
+    Parallel Extract API.
 
     Setup:
         Install ``langchain-parallel-web`` and set environment variable
@@ -123,10 +123,10 @@ class ParallelExtractTool(BaseTool):
 
     Key init args:
         api_key: Optional[SecretStr]
-            Parallel AI API key. If not provided, will be read from
+            Parallel API key. If not provided, will be read from
             PARALLEL_AI_API_KEY env var.
         base_url: str
-            Base URL for Parallel AI API. Defaults to "https://api.parallel.ai".
+            Base URL for Parallel API. Defaults to "https://api.parallel.ai".
         max_chars_per_extract: Optional[int]
             Maximum characters per extracted result.
 
@@ -178,10 +178,10 @@ class ParallelExtractTool(BaseTool):
     args_schema: type[BaseModel] = ParallelExtractInput
 
     api_key: Optional[SecretStr] = Field(default=None)
-    """Parallel AI API key. If not provided, will be read from env var."""
+    """Parallel API key. If not provided, will be read from env var."""
 
     base_url: str = Field(default="https://api.parallel.ai")
-    """Base URL for Parallel AI API."""
+    """Base URL for Parallel API."""
 
     max_chars_per_extract: Optional[int] = None
     """Maximum characters per extracted result."""
@@ -306,7 +306,7 @@ class ParallelExtractTool(BaseTool):
             return formatted_results
 
         except Exception as e:
-            msg = f"Error calling Parallel AI Extract API: {e!s}"
+            msg = f"Error calling Parallel Extract API: {e!s}"
             raise ValueError(msg) from e
 
     async def _arun(
@@ -415,5 +415,5 @@ class ParallelExtractTool(BaseTool):
             return formatted_results
 
         except Exception as e:
-            msg = f"Error calling Parallel AI Extract API: {e!s}"
+            msg = f"Error calling Parallel Extract API: {e!s}"
             raise ValueError(msg) from e

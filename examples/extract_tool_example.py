@@ -1,4 +1,4 @@
-"""Examples of Parallel AI Extract Tool integration."""
+"""Examples of Parallel Extract Tool integration."""
 
 from __future__ import annotations
 
@@ -167,7 +167,7 @@ def agent_integration_example() -> None:
 
 def main() -> None:
     """Main function demonstrating Parallel Extract Tool usage."""
-    print("=== Parallel AI Extract Tool Examples ===")
+    print("=== Parallel Extract Tool Examples ===")
 
     # Check if API key is set
     if not os.getenv("PARALLEL_AI_API_KEY"):
@@ -212,7 +212,7 @@ def main() -> None:
         print("\nTroubleshooting tips:")
         print("  - Ensure your API key is valid")
         print("  - Check your internet connection")
-        print("  - Verify the Parallel AI service is accessible")
+        print("  - Verify the Parallel service is accessible")
         raise
 
 
