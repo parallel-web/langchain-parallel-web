@@ -155,3 +155,97 @@ def get_async_search_client(
 ) -> AsyncParallelSearchClient:
     """Returns a configured async Parallel AI Search client."""
     return AsyncParallelSearchClient(api_key, base_url)
+
+
+class ParallelExtractClient:
+    """Synchronous client for Parallel AI Extract API using the Parallel SDK."""
+
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://api.parallel.ai",
+        environment: str = "production",
+    ):
+        self.api_key = api_key
+        self.base_url = base_url.rstrip("/")
+        self.environment = environment
+        # Initialize the Parallel SDK client
+        self.client = Parallel(api_key=api_key, base_url=base_url)
+
+    def extract(
+        self,
+        urls: list[str],
+        full_content: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
+        """Perform a synchronous extract using the Parallel AI Extract API via SDK."""
+        if not urls:
+            msg = "At least one URL must be provided"
+            raise ValueError(msg)
+
+        # Set timeout based on number of URLs (5 seconds per URL)
+        timeout = 5.0 * len(urls)
+
+        # Use the Parallel SDK's beta.extract method
+        extract_response = self.client.beta.extract(
+            urls=urls,
+            full_content=full_content or {},
+            betas=["search-extract-2025-10-10"],
+            timeout=timeout,
+        )
+
+        # Convert the SDK response to a dictionary
+        return extract_response.model_dump()
+
+
+class AsyncParallelExtractClient:
+    """Asynchronous client for Parallel AI Extract API using the Parallel SDK."""
+
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://api.parallel.ai",
+        environment: str = "production",
+    ):
+        self.api_key = api_key
+        self.base_url = base_url.rstrip("/")
+        self.environment = environment
+        # Initialize the Parallel SDK async client
+        self.client = AsyncParallel(api_key=api_key, base_url=base_url)
+
+    async def extract(
+        self,
+        urls: list[str],
+        full_content: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
+        """Perform an async extract using the Parallel AI Extract API via SDK."""
+        if not urls:
+            msg = "At least one URL must be provided"
+            raise ValueError(msg)
+
+        # Set timeout based on number of URLs (5 seconds per URL)
+        timeout = 5.0 * len(urls)
+
+        # Use the Parallel SDK's beta.extract method
+        extract_response = await self.client.beta.extract(
+            urls=urls,
+            full_content=full_content or {},
+            betas=["search-extract-2025-10-10"],
+            timeout=timeout,
+        )
+
+        # Convert the SDK response to a dictionary
+        return extract_response.model_dump()
+
+
+def get_extract_client(
+    api_key: str, base_url: str = "https://api.parallel.ai"
+) -> ParallelExtractClient:
+    """Returns a configured sync Parallel AI Extract client."""
+    return ParallelExtractClient(api_key, base_url)
+
+
+def get_async_extract_client(
+    api_key: str, base_url: str = "https://api.parallel.ai"
+) -> AsyncParallelExtractClient:
+    """Returns a configured async Parallel AI Extract client."""
+    return AsyncParallelExtractClient(api_key, base_url)

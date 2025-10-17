@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from langchain_tests.integration_tests import ToolsIntegrationTests
 
-from langchain_parallel_web.tools import ParallelWebSearchTool
+from langchain_parallel_web.search_tool import ParallelWebSearchTool
 
 
 class TestParallelWebSearchToolIntegration(ToolsIntegrationTests):

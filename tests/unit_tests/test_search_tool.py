@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from langchain_parallel_web.tools import ParallelWebSearchTool
+from langchain_parallel_web.search_tool import ParallelWebSearchTool
 
 
 class TestParallelWebSearchTool:
@@ -12,14 +12,18 @@ class TestParallelWebSearchTool:
 
     def test_tool_initialization(self) -> None:
         """Test tool can be initialized."""
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
             assert tool.name == "parallel_web_search"
             assert "Search the web using Parallel AI" in tool.description
 
     def test_tool_validation_requires_objective_or_queries(self) -> None:
         """Test that tool validates input requirements."""
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
 
             with pytest.raises(
@@ -30,7 +34,9 @@ class TestParallelWebSearchTool:
 
     def test_tool_validates_search_queries_limit(self) -> None:
         """Test that tool validates search queries limit."""
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
 
             with pytest.raises(ValueError, match="Maximum 5 search queries allowed"):
@@ -38,7 +44,9 @@ class TestParallelWebSearchTool:
 
     def test_tool_validates_query_length(self) -> None:
         """Test that tool validates individual query length."""
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
 
             long_query = "a" * 201
@@ -49,7 +57,9 @@ class TestParallelWebSearchTool:
 
     def test_tool_validates_objective_length(self) -> None:
         """Test that tool validates objective length."""
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
 
             long_objective = "a" * 5001
@@ -60,7 +70,9 @@ class TestParallelWebSearchTool:
 
     def test_tool_validates_max_results_range(self) -> None:
         """Test that tool validates max_results range."""
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
 
             with pytest.raises(
@@ -75,7 +87,9 @@ class TestParallelWebSearchTool:
 
     def test_tool_validates_max_chars_per_result(self) -> None:
         """Test that tool validates max_chars_per_result minimum."""
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
 
             with pytest.raises(
@@ -83,7 +97,7 @@ class TestParallelWebSearchTool:
             ):
                 tool._run(objective="test", max_chars_per_result=99)
 
-    @patch("langchain_parallel_web.tools.get_search_client")
+    @patch("langchain_parallel_web.search_tool.get_search_client")
     def test_tool_successful_search(self, mock_get_client: Mock) -> None:
         """Test successful search execution."""
         # Mock the search client
@@ -100,7 +114,9 @@ class TestParallelWebSearchTool:
         }
         mock_get_client.return_value = mock_client
 
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
             result = tool._run(objective="test search")
 
@@ -108,7 +124,7 @@ class TestParallelWebSearchTool:
             assert len(result["results"]) == 1
             assert result["results"][0]["title"] == "Test Result"
 
-    @patch("langchain_parallel_web.tools.get_search_client")
+    @patch("langchain_parallel_web.search_tool.get_search_client")
     def test_tool_handles_api_error(self, mock_get_client: Mock) -> None:
         """Test tool handles API errors gracefully."""
         # Mock the search client to raise an exception
@@ -116,7 +132,9 @@ class TestParallelWebSearchTool:
         mock_client.search.side_effect = Exception("API Error")
         mock_get_client.return_value = mock_client
 
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
 
             with pytest.raises(
@@ -124,7 +142,7 @@ class TestParallelWebSearchTool:
             ):
                 tool._run(objective="test search")
 
-    @patch("langchain_parallel_web.tools.get_search_client")
+    @patch("langchain_parallel_web.search_tool.get_search_client")
     def test_metadata_collection(self, mock_get_client: Mock) -> None:
         """Test metadata collection."""
         mock_client = Mock()
@@ -134,7 +152,9 @@ class TestParallelWebSearchTool:
         }
         mock_get_client.return_value = mock_client
 
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
             result = tool._run(
                 search_queries=["query1", "query2"],
@@ -150,7 +170,7 @@ class TestParallelWebSearchTool:
             assert "query_count" in metadata
             assert metadata["query_count"] == 2
 
-    @patch("langchain_parallel_web.tools.get_async_search_client")
+    @patch("langchain_parallel_web.search_tool.get_async_search_client")
     async def test_async_functionality(self, mock_get_async_client: Mock) -> None:
         """Test async search functionality."""
         mock_client = Mock()
@@ -162,7 +182,9 @@ class TestParallelWebSearchTool:
         )
         mock_get_async_client.return_value = mock_client
 
-        with patch("langchain_parallel_web.tools.get_api_key", return_value="test-key"):
+        with patch(
+            "langchain_parallel_web.search_tool.get_api_key", return_value="test-key"
+        ):
             tool = ParallelWebSearchTool()
             result = await tool._arun(objective="test async search")
 
