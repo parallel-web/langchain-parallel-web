@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from langchain_core.callbacks import CallbackManagerForToolRun
 from langchain_core.tools import BaseTool
@@ -11,10 +11,99 @@ from pydantic import BaseModel, Field, SecretStr, model_validator
 from ._client import get_api_key, get_extract_client
 
 
+class ExcerptSettings(BaseModel):
+    """Settings for excerpt extraction."""
+
+    max_chars_per_result: Optional[int] = Field(
+        default=None,
+        description=(
+            "Optional upper bound on the total number of characters to include "
+            "across all excerpts for each url."
+        ),
+    )
+
+
+class FullContentSettings(BaseModel):
+    """Settings for full content extraction."""
+
+    max_characters: Optional[int] = Field(
+        default=None,
+        description=(
+            "Optional limit on the number of characters to include in the full "
+            "content for each url."
+        ),
+    )
+
+
+class FetchPolicy(BaseModel):
+    """Fetch policy for cache vs live content."""
+
+    max_age_seconds: Optional[int] = Field(
+        default=None,
+        description=(
+            "Maximum age of cached content in seconds. Minimum 600 seconds. "
+            "If not provided, dynamic age policy will be used."
+        ),
+    )
+    timeout_seconds: Optional[float] = Field(
+        default=None,
+        description=(
+            "Timeout in seconds for fetching live content. If unspecified, "
+            "dynamic timeout will be used (15-60 seconds)."
+        ),
+    )
+    disable_cache_fallback: bool = Field(
+        default=False,
+        description=(
+            "If false, fallback to cached content if live fetch fails. "
+            "If true, returns an error instead."
+        ),
+    )
+
+
 class ParallelExtractInput(BaseModel):
     """Input schema for Parallel AI Extract Tool."""
 
     urls: list[str] = Field(description="List of URLs to extract content from")
+
+    search_objective: Optional[str] = Field(
+        default=None,
+        description=(
+            "If provided, focuses extracted content on the specified search objective"
+        ),
+    )
+
+    search_queries: Optional[list[str]] = Field(
+        default=None,
+        description=(
+            "If provided, focuses extracted content on the specified keyword search "
+            "queries"
+        ),
+    )
+
+    excerpts: Union[bool, ExcerptSettings] = Field(
+        default=True,
+        description=(
+            "Include excerpts from each URL relevant to the search objective and "
+            "queries. Can be boolean or ExcerptSettings object."
+        ),
+    )
+
+    full_content: Union[bool, FullContentSettings] = Field(
+        default=False,
+        description=(
+            "Include full content from each URL. Can be boolean or "
+            "FullContentSettings object."
+        ),
+    )
+
+    fetch_policy: Optional[FetchPolicy] = Field(
+        default=None,
+        description=(
+            "Fetch policy: determines when to return content from the cache "
+            "(faster) vs fetching live content (fresher)"
+        ),
+    )
 
 
 class ParallelExtractTool(BaseTool):
@@ -116,12 +205,22 @@ class ParallelExtractTool(BaseTool):
     def _run(
         self,
         urls: list[str],
+        search_objective: Optional[str] = None,
+        search_queries: Optional[list[str]] = None,
+        excerpts: Union[bool, ExcerptSettings] = True,
+        full_content: Union[bool, FullContentSettings] = False,
+        fetch_policy: Optional[FetchPolicy] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> list[dict[str, Any]]:
         """Extract content from URLs.
 
         Args:
             urls: List of URLs to extract content from
+            search_objective: Optional search objective to focus extraction
+            search_queries: Optional keyword search queries to focus extraction
+            excerpts: Include excerpts (boolean or ExcerptSettings)
+            full_content: Include full content (boolean or FullContentSettings)
+            fetch_policy: Optional fetch policy for cache vs live content
             run_manager: Callback manager for the tool run
 
         Returns:
@@ -136,15 +235,32 @@ class ParallelExtractTool(BaseTool):
             # Initialize extract client
             client = get_extract_client(api_key_str, self.base_url)
 
-            # Build full_content config if max_chars is specified
-            full_content = None
-            if self.max_chars_per_extract:
-                full_content = {"max_characters": self.max_chars_per_extract}
+            # Build full_content config
+            full_content_param = full_content
+            if self.max_chars_per_extract and isinstance(full_content, bool):
+                # Use tool-level config if full_content is just a boolean
+                full_content_param = {"max_characters": self.max_chars_per_extract}
+            elif isinstance(full_content, FullContentSettings):
+                full_content_param = full_content.model_dump(exclude_none=True)
+
+            # Build excerpts config
+            excerpts_param = excerpts
+            if isinstance(excerpts, ExcerptSettings):
+                excerpts_param = excerpts.model_dump(exclude_none=True)
+
+            # Build fetch_policy config
+            fetch_policy_param = None
+            if fetch_policy:
+                fetch_policy_param = fetch_policy.model_dump(exclude_none=True)
 
             # Extract content from URLs
             extract_response = client.extract(
                 urls=urls,
-                full_content=full_content,
+                search_objective=search_objective,
+                search_queries=search_queries,
+                excerpts=excerpts_param,
+                full_content=full_content_param,
+                fetch_policy=fetch_policy_param,
             )
 
             results = extract_response.get("results", [])
@@ -156,8 +272,17 @@ class ParallelExtractTool(BaseTool):
                 formatted_result = {
                     "url": result.get("url"),
                     "title": result.get("title"),
-                    "content": result.get("full_content", ""),
                 }
+
+                # Add excerpts if present
+                if "excerpts" in result:
+                    formatted_result["excerpts"] = result["excerpts"]
+
+                # Add full_content if present
+                if "full_content" in result:
+                    formatted_result["full_content"] = result["full_content"]
+                    # For backward compatibility, also set as "content"
+                    formatted_result["content"] = result["full_content"]
 
                 # Add optional fields if present
                 if "publish_date" in result:
@@ -187,12 +312,22 @@ class ParallelExtractTool(BaseTool):
     async def _arun(
         self,
         urls: list[str],
+        search_objective: Optional[str] = None,
+        search_queries: Optional[list[str]] = None,
+        excerpts: Union[bool, ExcerptSettings] = True,
+        full_content: Union[bool, FullContentSettings] = False,
+        fetch_policy: Optional[FetchPolicy] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> list[dict[str, Any]]:
         """Extract content from URLs asynchronously.
 
         Args:
             urls: List of URLs to extract content from
+            search_objective: Optional search objective to focus extraction
+            search_queries: Optional keyword search queries to focus extraction
+            excerpts: Include excerpts (boolean or ExcerptSettings)
+            full_content: Include full content (boolean or FullContentSettings)
+            fetch_policy: Optional fetch policy for cache vs live content
             run_manager: Callback manager for the tool run
 
         Returns:
@@ -209,15 +344,32 @@ class ParallelExtractTool(BaseTool):
             # Initialize async extract client
             client = get_async_extract_client(api_key_str, self.base_url)
 
-            # Build full_content config if max_chars is specified
-            full_content = None
-            if self.max_chars_per_extract:
-                full_content = {"max_characters": self.max_chars_per_extract}
+            # Build full_content config
+            full_content_param = full_content
+            if self.max_chars_per_extract and isinstance(full_content, bool):
+                # Use tool-level config if full_content is just a boolean
+                full_content_param = {"max_characters": self.max_chars_per_extract}
+            elif isinstance(full_content, FullContentSettings):
+                full_content_param = full_content.model_dump(exclude_none=True)
+
+            # Build excerpts config
+            excerpts_param = excerpts
+            if isinstance(excerpts, ExcerptSettings):
+                excerpts_param = excerpts.model_dump(exclude_none=True)
+
+            # Build fetch_policy config
+            fetch_policy_param = None
+            if fetch_policy:
+                fetch_policy_param = fetch_policy.model_dump(exclude_none=True)
 
             # Extract content from URLs
             extract_response = await client.extract(
                 urls=urls,
-                full_content=full_content,
+                search_objective=search_objective,
+                search_queries=search_queries,
+                excerpts=excerpts_param,
+                full_content=full_content_param,
+                fetch_policy=fetch_policy_param,
             )
 
             results = extract_response.get("results", [])
@@ -229,8 +381,17 @@ class ParallelExtractTool(BaseTool):
                 formatted_result = {
                     "url": result.get("url"),
                     "title": result.get("title"),
-                    "content": result.get("full_content", ""),
                 }
+
+                # Add excerpts if present
+                if "excerpts" in result:
+                    formatted_result["excerpts"] = result["excerpts"]
+
+                # Add full_content if present
+                if "full_content" in result:
+                    formatted_result["full_content"] = result["full_content"]
+                    # For backward compatibility, also set as "content"
+                    formatted_result["content"] = result["full_content"]
 
                 # Add optional fields if present
                 if "publish_date" in result:

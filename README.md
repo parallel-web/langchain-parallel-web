@@ -406,7 +406,7 @@ except Exception as e:
 See the `examples/` and `docs/` directories for complete working examples:
 
 - `examples/chat_example.py` - Chat model usage examples
-- `docs/tools.ipynb` - Search tool examples and tutorials
+- `docs/search_tool.ipynb` - Search tool examples and tutorials
 - `docs/extract_tool.ipynb` - Extract tool examples and tutorials
 - Basic synchronous usage
 - Streaming responses
@@ -439,11 +439,6 @@ The Extract API provides clean content extraction from web pages:
 - **Output**: Clean, structured content with metadata (title, publish date, etc.)
 - **Integration**: Works with LangChain tools and agents
 - **Error Handling**: Gracefully handles failed extractions with detailed error info
-
-For full API details, see:
-- [Parallel AI Chat API Documentation](https://docs.parallel.ai/resources/chat-api)
-- [Parallel AI Search API Documentation](https://docs.parallel.ai/resources/search-api)
-- [Parallel AI Extract API Documentation](https://docs.parallel.ai/resources/extract-api)
 
 ## Performance & Rate Limits
 
@@ -478,12 +473,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ### Documentation
 - [Parallel AI Documentation](https://docs.parallel.ai/)
-- [Chat API Reference](https://docs.parallel.ai/resources/chat-api)
-- [Search API Reference](https://docs.parallel.ai/resources/search-api)
+- [Chat API Reference](https://docs.parallel.ai/chat-api)
+- [Search API Reference](https://docs.parallel.ai/search-api)
 - [LangChain Documentation](https://python.langchain.com/)
 
 ### Getting Help
-- [GitHub Issues](https://github.com/yourusername/langchain-parallel-web/issues)
+- [GitHub Issues](https://github.com/parallel-web/langchain-parallel-web/issues)
 - [Parallel AI Support](mailto:support@parallel.ai)
 
 ## Changelog
