@@ -1247,13 +1247,15 @@ files = [
 
 [[package]]
 name = "parallel-web"
-version = "0.2.1"
+version = "0.3.1"
 description = "The official Python library for the Parallel API"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "parallel_web-0.3.1-py3-none-any.whl", hash = "sha256:3898de8c87bd1893dbb53af179d4ee5194acca379086ee65eb012e7edd6b05a3"},
+    {file = "parallel_web-0.3.1.tar.gz", hash = "sha256:395aef07e21d6d9b29ba67a92a8f8127996a1029e6043fe56ee2df9372ba39ee"},
+]
 
 [package.dependencies]
 anyio = ">=3.5.0,<5"
@@ -1264,13 +1266,7 @@ sniffio = "*"
 typing-extensions = ">=4.10,<5"
 
 [package.extras]
-aiohttp = ["aiohttp", "httpx-aiohttp (>=0.1.8)"]
-
-[package.source]
-type = "git"
-url = "ssh://git@github.com/shapleyai/parallel-sdk-internal-python.git"
-reference = "HEAD"
-resolved_reference = "9fc83fe897a5174a6f71968353623a42150c9522"
+aiohttp = ["aiohttp", "httpx-aiohttp (>=0.1.9)"]
 
 [[package]]
 name = "pathspec"
@@ -2606,4 +2602,4 @@ cffi = ["cffi (>=1.17,<2.0)", "cffi (>=2.0.0b)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<4.0"
-content-hash = "e2e57a88edf6de1a94ae76c2df613ebe7bbade0e1822063a8837e03ed46efdd9"
+content-hash = "7e2186984976d28d382a7f84ec23d61f9150aa9ea502d6d927c13e401858cda9"
