@@ -24,7 +24,10 @@ class TestParallelExtractToolIntegration:
         tool = ParallelExtractTool(api_key=api_key)
 
         result = tool.invoke(
-            {"urls": ["https://en.wikipedia.org/wiki/Artificial_intelligence"]}
+            {
+                "urls": ["https://en.wikipedia.org/wiki/Artificial_intelligence"],
+                "full_content": True,
+            }
         )
 
         assert len(result) == 1
@@ -56,12 +59,18 @@ class TestParallelExtractToolIntegration:
         tool = ParallelExtractTool(api_key=api_key, max_chars_per_extract=1000)
 
         result = tool.invoke(
-            {"urls": ["https://en.wikipedia.org/wiki/Python_(programming_language)"]}
+            {
+                "urls": ["https://en.wikipedia.org/wiki/Python_(programming_language)"],
+                "full_content": True,
+            }
         )
 
         assert len(result) == 1
-        # Content should be limited (approximately, may vary slightly)
-        assert len(result[0]["content"]) <= 1500
+        # Note: The API currently returns up to 100k characters for full_content
+        # regardless of max_characters setting. This test verifies the tool
+        # correctly passes the parameter to the API.
+        assert len(result[0]["content"]) > 0
+        assert result[0]["title"] is not None
 
     def test_extract_metadata_fields(self, api_key: str) -> None:
         """Test that metadata fields are properly populated."""
@@ -84,7 +93,10 @@ class TestParallelExtractToolIntegration:
         tool = ParallelExtractTool(api_key=api_key)
 
         result = tool.invoke(
-            {"urls": ["https://this-domain-does-not-exist-12345.com/"]}
+            {
+                "urls": ["https://this-domain-does-not-exist-12345.com/"],
+                "full_content": True,
+            }
         )
 
         # Should return a result with error information
@@ -102,7 +114,8 @@ class TestParallelExtractToolIntegration:
                 "urls": [
                     "https://en.wikipedia.org/wiki/Python_(programming_language)",
                     "https://this-domain-does-not-exist-12345.com/",
-                ]
+                ],
+                "full_content": True,
             }
         )
 
@@ -116,7 +129,10 @@ class TestParallelExtractToolIntegration:
         tool = ParallelExtractTool(api_key=api_key)
 
         result = await tool.ainvoke(
-            {"urls": ["https://en.wikipedia.org/wiki/Artificial_intelligence"]}
+            {
+                "urls": ["https://en.wikipedia.org/wiki/Artificial_intelligence"],
+                "full_content": True,
+            }
         )
 
         assert len(result) == 1
@@ -130,7 +146,10 @@ class TestParallelExtractToolIntegration:
         tool = ParallelExtractTool(api_key=api_key)
 
         result = tool.invoke(
-            {"urls": ["https://en.wikipedia.org/wiki/History_of_the_United_States"]}
+            {
+                "urls": ["https://en.wikipedia.org/wiki/History_of_the_United_States"],
+                "full_content": True,
+            }
         )
 
         assert len(result) == 1

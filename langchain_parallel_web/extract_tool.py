@@ -26,7 +26,7 @@ class ExcerptSettings(BaseModel):
 class FullContentSettings(BaseModel):
     """Settings for full content extraction."""
 
-    max_characters: Optional[int] = Field(
+    max_chars_per_result: Optional[int] = Field(
         default=None,
         description=(
             "Optional limit on the number of characters to include in the full "
@@ -239,7 +239,9 @@ class ParallelExtractTool(BaseTool):
             full_content_param = full_content
             if self.max_chars_per_extract and isinstance(full_content, bool):
                 # Use tool-level config if full_content is just a boolean
-                full_content_param = {"max_characters": self.max_chars_per_extract}
+                full_content_param = {
+                    "max_chars_per_result": self.max_chars_per_extract
+                }
             elif isinstance(full_content, FullContentSettings):
                 full_content_param = full_content.model_dump(exclude_none=True)
 
@@ -256,7 +258,7 @@ class ParallelExtractTool(BaseTool):
             # Extract content from URLs
             extract_response = client.extract(
                 urls=urls,
-                search_objective=search_objective,
+                objective=search_objective,
                 search_queries=search_queries,
                 excerpts=excerpts_param,
                 full_content=full_content_param,
@@ -275,8 +277,12 @@ class ParallelExtractTool(BaseTool):
                 }
 
                 # Add excerpts if present
-                if "excerpts" in result:
+                if "excerpts" in result and result["excerpts"] is not None:
                     formatted_result["excerpts"] = result["excerpts"]
+                    # Combine excerpts into content field for backward compatibility
+                    if "full_content" not in result:
+                        # Excerpts are a list of strings, join them with newlines
+                        formatted_result["content"] = "\n\n".join(result["excerpts"])
 
                 # Add full_content if present
                 if "full_content" in result:
@@ -296,8 +302,9 @@ class ParallelExtractTool(BaseTool):
                     {
                         "url": error.get("url"),
                         "title": None,
-                        "content": f"Error: {error.get('message', 'Unknown error')}",
+                        "content": f"Error: {error.get('error_type', 'Unknown error')}",
                         "error_type": error.get("error_type"),
+                        "http_status_code": error.get("http_status_code"),
                     }
                     for error in errors
                 ]
@@ -348,7 +355,9 @@ class ParallelExtractTool(BaseTool):
             full_content_param = full_content
             if self.max_chars_per_extract and isinstance(full_content, bool):
                 # Use tool-level config if full_content is just a boolean
-                full_content_param = {"max_characters": self.max_chars_per_extract}
+                full_content_param = {
+                    "max_chars_per_result": self.max_chars_per_extract
+                }
             elif isinstance(full_content, FullContentSettings):
                 full_content_param = full_content.model_dump(exclude_none=True)
 
@@ -365,7 +374,7 @@ class ParallelExtractTool(BaseTool):
             # Extract content from URLs
             extract_response = await client.extract(
                 urls=urls,
-                search_objective=search_objective,
+                objective=search_objective,
                 search_queries=search_queries,
                 excerpts=excerpts_param,
                 full_content=full_content_param,
@@ -384,8 +393,12 @@ class ParallelExtractTool(BaseTool):
                 }
 
                 # Add excerpts if present
-                if "excerpts" in result:
+                if "excerpts" in result and result["excerpts"] is not None:
                     formatted_result["excerpts"] = result["excerpts"]
+                    # Combine excerpts into content field for backward compatibility
+                    if "full_content" not in result:
+                        # Excerpts are a list of strings, join them with newlines
+                        formatted_result["content"] = "\n\n".join(result["excerpts"])
 
                 # Add full_content if present
                 if "full_content" in result:
@@ -405,8 +418,9 @@ class ParallelExtractTool(BaseTool):
                     {
                         "url": error.get("url"),
                         "title": None,
-                        "content": f"Error: {error.get('message', 'Unknown error')}",
+                        "content": f"Error: {error.get('error_type', 'Unknown error')}",
                         "error_type": error.get("error_type"),
+                        "http_status_code": error.get("http_status_code"),
                     }
                     for error in errors
                 ]

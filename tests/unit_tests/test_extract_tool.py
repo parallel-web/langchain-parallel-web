@@ -112,7 +112,6 @@ class TestParallelExtractTool:
                 {
                     "url": "https://example2.com",
                     "error_type": "http_error",
-                    "message": "404 Not Found",
                     "http_status_code": 404,
                     "content": None,
                 }
@@ -131,8 +130,9 @@ class TestParallelExtractTool:
             assert len(result) == 2
             assert result[0]["content"] == "Content 1"
             assert result[1]["url"] == "https://example2.com"
-            assert "Error: 404 Not Found" in result[1]["content"]
+            assert "Error: http_error" in result[1]["content"]
             assert result[1]["error_type"] == "http_error"
+            assert result[1]["http_status_code"] == 404
 
     @patch("langchain_parallel_web.extract_tool.get_extract_client")
     def test_extract_with_max_chars(self, mock_get_extract_client: Mock) -> None:
@@ -159,7 +159,7 @@ class TestParallelExtractTool:
 
             # Verify extract was called with full_content config
             call_kwargs = mock_client.extract.call_args[1]
-            assert call_kwargs["full_content"] == {"max_characters": 5000}
+            assert call_kwargs["full_content"] == {"max_chars_per_result": 5000}
 
     @patch("langchain_parallel_web.extract_tool.get_extract_client")
     def test_extract_handles_api_error(self, mock_get_extract_client: Mock) -> None:
