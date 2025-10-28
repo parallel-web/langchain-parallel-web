@@ -6,13 +6,34 @@ build-backend = "poetry.core.masonry.api"
 name = "langchain-parallel-web"
 version = "0.1.0"
 description = "A LangChain integration for Parallel Web AI services, including Chat and Search."
-authors = ["Parallel AI Team <support@parallel.ai>"]
+authors = ["Parallel Team <support@parallel.ai>"]
 readme = "README.md"
 repository = "https://github.com/parallel-web/langchain-parallel-web"
 license = "MIT"
 
 [tool.mypy]
 disallow_untyped_defs = true
+
+# Ignore type errors from the Parallel SDK
+[[tool.mypy.overrides]]
+module = "parallel.*"
+ignore_missing_imports = true
+ignore_errors = true
+
+# Relax type checking for our SDK client wrapper
+[[tool.mypy.overrides]]
+module = "langchain_parallel_web._client"
+disable_error_code = ["arg-type"]
+
+# Relax type checking for extract tool's SDK interaction
+[[tool.mypy.overrides]]
+module = "langchain_parallel_web.extract_tool"
+disable_error_code = ["assignment"]
+
+# Allow string to SecretStr in integration tests
+[[tool.mypy.overrides]]
+module = "tests.integration_tests.*"
+disable_error_code = ["arg-type"]
 
 [tool.poetry.urls]
 "Source Code" = "https://github.com/parallel-web/langchain-parallel-web"
@@ -24,6 +45,7 @@ langchain-core = "^0.3.76"
 openai = "^1.88.0"
 pydantic = "^2.11.7"
 httpx = "^0.27.0"
+parallel-web = "^0.3.2"
 
 [tool.ruff]
 target-version = "py39"
@@ -96,6 +118,13 @@ convention = "google"
 "examples/*.py" = ["T201"] # Allow print statements in examples
 "docs/*.ipynb" = ["T201", "E501"] # Allow print statements and long lines in documentation
 "scripts/*.py" = ["SIM105", "S110"] # Allow try-except-pass in scripts
+"langchain_parallel_web/extract_tool.py" = [
+    "FBT001", # Boolean-typed positional argument (matches Extract API design)
+    "FBT002", # Boolean default positional argument (matches Extract API design)
+]
+"langchain_parallel_web/_client.py" = [
+    "FBT001", # Boolean-typed positional argument (matches Extract API design)
+]
 
 [tool.coverage.run]
 omit = ["tests/*"]

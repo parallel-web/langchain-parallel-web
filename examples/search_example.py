@@ -1,4 +1,4 @@
-"""Examples of Parallel AI Search integration."""
+"""Examples of Parallel Search integration."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import Any
 
 from langchain_parallel_web import ParallelWebSearchTool
 
-# Set your API key: export PARALLEL_AI_API_KEY="your-api-key"
+# Set your API key: export PARALLEL_API_KEY="your-api-key"
 
 
 def basic_search_examples() -> None:
@@ -57,12 +57,11 @@ def search_examples() -> None:
 
     search_tool = ParallelWebSearchTool()
 
-    # Example 3: Domain filtering with pro processor
+    # Example 3: Academic search with domain filtering
     print("\nExample 3: Academic search with domain filtering")
     result3 = search_tool.invoke(
         {
             "objective": "Latest climate change research and findings",
-            "processor": "pro",  # Higher quality, slower processing
             "source_policy": {
                 "include_domains": ["nature.com", "science.org", "arxiv.org"],
                 "exclude_domains": ["reddit.com", "twitter.com", "facebook.com"],
@@ -86,7 +85,6 @@ def search_examples() -> None:
                 "startup funding trends",
                 "AI company acquisitions",
             ],
-            "processor": "base",
             "max_results": 6,
             "include_metadata": True,
         }
@@ -108,7 +106,6 @@ async def async_search_examples() -> None:
     result5 = await search_tool.ainvoke(
         {
             "objective": "Latest developments in quantum computing",
-            "processor": "base",
             "max_results": 4,
             "include_metadata": True,
         }
@@ -171,7 +168,6 @@ def display_metadata(result: dict[str, Any]) -> None:
     metadata = result["search_metadata"]
     print("\n  Search Metadata:")
     print(f"    Duration: {metadata.get('search_duration_seconds', 'N/A')}s")
-    print(f"    Processor: {metadata.get('processor_used', 'N/A')}")
     print(
         f"    Results: {metadata.get('actual_results_returned', 'N/A')}"
         f"/{metadata.get('max_results_requested', 'N/A')}"
@@ -198,7 +194,6 @@ def practical_use_cases() -> None:
     research_result = search_tool.invoke(
         {
             "objective": "Analysis of renewable energy adoption trends in 2024",
-            "processor": "pro",
             "source_policy": {
                 "include_domains": ["iea.org", "irena.org", "energy.gov", "nature.com"],
                 "exclude_domains": ["blog.com", "personal-site.com"],
@@ -223,7 +218,6 @@ def practical_use_cases() -> None:
                 "cybersecurity breaches 2024",
                 "cloud computing trends",
             ],
-            "processor": "base",  # Fast updates for news
             "max_results": 15,
             "include_metadata": True,
         }
@@ -249,7 +243,6 @@ def practical_use_cases() -> None:
                 ],
                 "exclude_domains": ["reddit.com", "twitter.com"],
             },
-            "processor": "base",
             "max_results": 12,
             "include_metadata": True,
         }
@@ -262,12 +255,12 @@ def practical_use_cases() -> None:
 
 async def main() -> None:
     """Main function demonstrating Parallel Web Search Tool usage."""
-    print("=== Parallel AI Search Examples ===")
+    print("=== Parallel Search Examples ===")
 
     # Check if API key is set
-    if not os.getenv("PARALLEL_AI_API_KEY"):
-        print("Error: PARALLEL_AI_API_KEY environment variable not set")
-        print("Please set your API key: export PARALLEL_AI_API_KEY='your-api-key'")
+    if not os.getenv("PARALLEL_API_KEY"):
+        print("Error: PARALLEL_API_KEY environment variable not set")
+        print("Please set your API key: export PARALLEL_API_KEY='your-api-key'")
         return
 
     print("API key found in environment")
@@ -292,7 +285,6 @@ async def main() -> None:
         print("  - Basic objective and query-based searches")
         print("  - Multi-query search capabilities")
         print("  - Domain filtering with source policies")
-        print("  - Base and Pro processor options")
         print("  - Async search execution")
         print("  - Parallel search processing")
         print("  - Metadata collection")
@@ -303,7 +295,7 @@ async def main() -> None:
         print("\nTroubleshooting tips:")
         print("  - Ensure your API key is valid")
         print("  - Check your internet connection")
-        print("  - Verify the Parallel AI service is accessible")
+        print("  - Verify the Parallel service is accessible")
         raise
 
 
@@ -311,8 +303,8 @@ def run_sync_examples() -> None:
     """Run only synchronous examples for testing."""
     print("=== Running Synchronous Examples Only ===")
 
-    if not os.getenv("PARALLEL_AI_API_KEY"):
-        print("Error: PARALLEL_AI_API_KEY environment variable not set")
+    if not os.getenv("PARALLEL_API_KEY"):
+        print("Error: PARALLEL_API_KEY environment variable not set")
         return
 
     try:

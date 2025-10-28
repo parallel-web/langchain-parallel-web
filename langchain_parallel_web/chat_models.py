@@ -1,6 +1,6 @@
 """Parallel Web chat model integration.
 
-This module provides the ChatParallelWeb class for interacting with Parallel AI's
+This module provides the ChatParallelWeb class for interacting with Parallel's
 Chat API through an OpenAI-compatible interface.
 """
 
@@ -63,7 +63,7 @@ def _create_ai_message(content: str, response_metadata: dict[str, Any]) -> AIMes
     return AIMessage(
         content=content,
         response_metadata=response_metadata,
-        usage_metadata=None,  # Parallel AI doesn't return usage metadata
+        usage_metadata=None,  # Parallel doesn't return usage metadata
     )
 
 
@@ -80,7 +80,7 @@ def _create_stream_response_metadata(chunk: Any, choice: Any) -> dict[str, Any]:
 def _merge_consecutive_messages(messages: list[BaseMessage]) -> list[BaseMessage]:
     """Merge consecutive messages of the same type to satisfy API requirements.
 
-    Parallel AI requires messages to alternate between user and assistant roles.
+    Parallel requires messages to alternate between user and assistant roles.
     This function merges consecutive messages of the same type.
     """
     if not messages:
@@ -128,25 +128,25 @@ def _merge_consecutive_messages(messages: list[BaseMessage]) -> list[BaseMessage
 class ChatParallelWeb(BaseChatModel):
     """Parallel Web chat model integration.
 
-    This integration connects to Parallel AI's Chat API, which provides
+    This integration connects to Parallel's Chat API, which provides
     real-time web research capabilities through an OpenAI-compatible interface.
 
     Setup:
         Install ``langchain-parallel-web`` and set environment variable
-        ``PARALLEL_AI_API_KEY``.
+        ``PARALLEL_API_KEY``.
 
         .. code-block:: bash
 
             pip install -U langchain-parallel-web
-            export PARALLEL_AI_API_KEY="your-api-key"
+            export PARALLEL_API_KEY="your-api-key"
 
     Key init args — completion params:
         model: str
             Name of Parallel Web model to use. Defaults to "speed".
         temperature: Optional[float]
-            Sampling temperature (ignored by Parallel AI).
+            Sampling temperature (ignored by Parallel).
         max_tokens: Optional[int]
-            Max number of tokens to generate (ignored by Parallel AI).
+            Max number of tokens to generate (ignored by Parallel).
 
     Key init args — client params:
         timeout: Optional[float]
@@ -154,10 +154,10 @@ class ChatParallelWeb(BaseChatModel):
         max_retries: int
             Max number of retries.
         api_key: Optional[str]
-            Parallel AI API key. If not passed in will be read from env var
-            PARALLEL_AI_API_KEY.
+            Parallel API key. If not passed in will be read from env var
+            PARALLEL_API_KEY.
         base_url: str
-            Base URL for Parallel AI API. Defaults to "https://api.parallel.ai".
+            Base URL for Parallel API. Defaults to "https://api.parallel.ai".
 
     Instantiate:
         .. code-block:: python
@@ -220,20 +220,20 @@ class ChatParallelWeb(BaseChatModel):
     """
 
     model: str = Field(default="speed", alias="model_name")
-    """The name of the model to use. Defaults to 'speed' for Parallel AI."""
+    """The name of the model to use. Defaults to 'speed' for Parallel."""
 
     api_key: Optional[SecretStr] = Field(default=None)
-    """Parallel AI API key. If not provided, will be read from
-    PARALLEL_AI_API_KEY env var."""
+    """Parallel API key. If not provided, will be read from
+    PARALLEL_API_KEY env var."""
 
     base_url: str = Field(default="https://api.parallel.ai")
-    """Base URL for Parallel AI API."""
+    """Base URL for Parallel API."""
 
     temperature: Optional[float] = Field(default=None)
-    """Sampling temperature (ignored by Parallel AI)."""
+    """Sampling temperature (ignored by Parallel)."""
 
     max_tokens: Optional[int] = Field(default=None)
-    """Max number of tokens to generate (ignored by Parallel AI)."""
+    """Max number of tokens to generate (ignored by Parallel)."""
 
     timeout: Optional[float] = Field(default=None)
     """Timeout for requests."""
@@ -241,36 +241,36 @@ class ChatParallelWeb(BaseChatModel):
     max_retries: int = Field(default=2)
     """Max number of retries."""
 
-    # OpenAI-compatible parameters that are ignored by Parallel AI
+    # OpenAI-compatible parameters that are ignored by Parallel
     response_format: Optional[dict[str, Any]] = Field(default=None)
-    """Response format (ignored by Parallel AI)."""
+    """Response format (ignored by Parallel)."""
 
     tools: Optional[list[dict[str, Any]]] = Field(default=None)
-    """Tools for function calling (ignored by Parallel AI)."""
+    """Tools for function calling (ignored by Parallel)."""
 
     tool_choice: Optional[str] = Field(default=None)
-    """Tool choice parameter (ignored by Parallel AI)."""
+    """Tool choice parameter (ignored by Parallel)."""
 
     stream_options: Optional[dict[str, Any]] = Field(default=None)
-    """Stream options (ignored by Parallel AI)."""
+    """Stream options (ignored by Parallel)."""
 
     top_p: Optional[float] = Field(default=None)
-    """Top-p sampling parameter (ignored by Parallel AI)."""
+    """Top-p sampling parameter (ignored by Parallel)."""
 
     frequency_penalty: Optional[float] = Field(default=None)
-    """Frequency penalty (ignored by Parallel AI)."""
+    """Frequency penalty (ignored by Parallel)."""
 
     presence_penalty: Optional[float] = Field(default=None)
-    """Presence penalty (ignored by Parallel AI)."""
+    """Presence penalty (ignored by Parallel)."""
 
     logit_bias: Optional[dict[str, float]] = Field(default=None)
-    """Logit bias (ignored by Parallel AI)."""
+    """Logit bias (ignored by Parallel)."""
 
     seed: Optional[int] = Field(default=None)
-    """Random seed (ignored by Parallel AI)."""
+    """Random seed (ignored by Parallel)."""
 
     user: Optional[str] = Field(default=None)
-    """User identifier (ignored by Parallel AI)."""
+    """User identifier (ignored by Parallel)."""
 
     _client: Optional[openai.OpenAI] = None
     _async_client: Optional[openai.AsyncOpenAI] = None
@@ -287,7 +287,7 @@ class ChatParallelWeb(BaseChatModel):
         if not self.api_key:
             self.api_key = SecretStr(api_key_str)
 
-        # Initialize both sync and async OpenAI clients configured for Parallel AI
+        # Initialize both sync and async OpenAI clients configured for Parallel
         self._client = get_openai_client(api_key_str, self.base_url)
         self._async_client = get_async_openai_client(api_key_str, self.base_url)
         return self
@@ -334,7 +334,7 @@ class ChatParallelWeb(BaseChatModel):
     @property
     def lc_secrets(self) -> dict[str, str]:
         """Return secrets for LangChain serialization."""
-        return {"api_key": "PARALLEL_AI_API_KEY"}
+        return {"api_key": "PARALLEL_API_KEY"}
 
     @property
     def lc_attributes(self) -> dict[str, Any]:
@@ -356,23 +356,20 @@ class ChatParallelWeb(BaseChatModel):
 
     @contextlib.contextmanager
     def _handle_errors(self) -> Iterator[None]:
-        """Handle errors from Parallel AI API."""
+        """Handle errors from Parallel API."""
         try:
             yield
         except AuthenticationError as e:
             msg = (
-                f"Authentication failed with Parallel AI API. "
+                f"Authentication failed with Parallel API. "
                 f"Please check your API key: {e!s}"
             )
             raise ValueError(msg)
         except RateLimitError as e:
-            msg = (
-                f"Rate limit exceeded for Parallel AI API. "
-                f"Please try again later: {e!s}"
-            )
+            msg = f"Rate limit exceeded for Parallel API. Please try again later: {e!s}"
             raise ValueError(msg)
         except Exception as e:
-            msg = f"Error calling Parallel AI API: {e!s}"
+            msg = f"Error calling Parallel API: {e!s}"
             raise ValueError(msg)
 
     def _process_non_stream_response(self, response: Any) -> ChatResult:
@@ -405,7 +402,7 @@ class ChatParallelWeb(BaseChatModel):
         chunk_message = AIMessageChunk(
             content=content,
             response_metadata=response_metadata,
-            usage_metadata=None,  # Parallel AI doesn't return usage metadata
+            usage_metadata=None,  # Parallel doesn't return usage metadata
         )
 
         if run_manager and content:
@@ -432,7 +429,7 @@ class ChatParallelWeb(BaseChatModel):
         chunk_message = AIMessageChunk(
             content=content,
             response_metadata=response_metadata,
-            usage_metadata=None,  # Parallel AI doesn't return usage metadata
+            usage_metadata=None,  # Parallel doesn't return usage metadata
         )
 
         if run_manager and content:
@@ -447,7 +444,7 @@ class ChatParallelWeb(BaseChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> ChatResult:
-        """Generate a response using Parallel AI's chat API."""
+        """Generate a response using Parallel's chat API."""
         openai_messages = _prepare_messages(messages)
 
         with self._handle_errors():
@@ -469,7 +466,7 @@ class ChatParallelWeb(BaseChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> Iterator[ChatGenerationChunk]:
-        """Stream responses from Parallel AI's chat API."""
+        """Stream responses from Parallel's chat API."""
         openai_messages = _prepare_messages(messages)
 
         with self._handle_errors():
@@ -494,7 +491,7 @@ class ChatParallelWeb(BaseChatModel):
         run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> ChatResult:
-        """Async generate a response using Parallel AI's chat API."""
+        """Async generate a response using Parallel's chat API."""
         openai_messages = _prepare_messages(messages)
 
         with self._handle_errors():
@@ -516,7 +513,7 @@ class ChatParallelWeb(BaseChatModel):
         run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> AsyncIterator[ChatGenerationChunk]:
-        """Async stream responses from Parallel AI's chat API."""
+        """Async stream responses from Parallel's chat API."""
         openai_messages = _prepare_messages(messages)
 
         with self._handle_errors():

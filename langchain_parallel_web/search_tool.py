@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import asyncio
 from datetime import datetime
-from typing import Any, Literal, Optional, Union
+from typing import Any, Optional, Union
 
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
@@ -13,7 +12,7 @@ from langchain_core.callbacks import (
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, SecretStr, model_validator
 
-from ._client import get_api_key, get_search_client
+from ._client import get_api_key, get_async_search_client, get_search_client
 
 
 class ParallelWebSearchInput(BaseModel):
@@ -30,11 +29,6 @@ class ParallelWebSearchInput(BaseModel):
         description="Optional list of search queries to guide the search. "
         "Maximum 5 queries, each up to 200 characters. Either this or objective "
         "must be provided.",
-    )
-    processor: Literal["base", "pro"] = Field(
-        default="base",
-        description="Processor to use. 'base' for fast responses (4-5s), "
-        "'pro' for higher quality (45-70s).",
     )
     max_results: int = Field(
         default=10, description="Maximum number of search results to return (1 to 40)."
@@ -62,28 +56,28 @@ class ParallelWebSearchInput(BaseModel):
 
 
 class ParallelWebSearchTool(BaseTool):
-    """Parallel AI Search tool with web research capabilities.
+    """Parallel Search tool with web research capabilities.
 
-    This tool provides access to Parallel AI's Search API, which streamlines
+    This tool provides access to Parallel's Search API, which streamlines
     the traditional search → scrape → extract pipeline into a single API call.
     Features include domain filtering, multiple processors, async support,
     and metadata collection.
 
     Setup:
         Install ``langchain-parallel-web`` and set environment variable
-        ``PARALLEL_AI_API_KEY``.
+        ``PARALLEL_API_KEY``.
 
         .. code-block:: bash
 
             pip install -U langchain-parallel-web
-            export PARALLEL_AI_API_KEY="your-api-key"
+            export PARALLEL_API_KEY="your-api-key"
 
     Key init args:
         api_key: Optional[SecretStr]
-            Parallel AI API key. If not provided, will be read from
-            PARALLEL_AI_API_KEY env var.
+            Parallel API key. If not provided, will be read from
+            PARALLEL_API_KEY env var.
         base_url: str
-            Base URL for Parallel AI API. Defaults to "https://api.parallel.ai".
+            Base URL for Parallel API. Defaults to "https://api.parallel.ai".
 
     Instantiation:
         .. code-block:: python
@@ -114,13 +108,12 @@ class ParallelWebSearchTool(BaseTool):
                 "max_results": 10
             })
 
-    Domain filtering and processor selection:
+    Domain filtering:
         .. code-block:: python
 
-            # Domain filtering and processor selection
+            # Domain filtering
             result = tool.invoke({
                 "objective": "Recent climate change research",
-                "processor": "pro",  # Higher quality, slower
                 "source_policy": {
                     "include_domains": ["nature.com", "science.org"],
                     "exclude_domains": ["reddit.com", "twitter.com"]
@@ -136,8 +129,7 @@ class ParallelWebSearchTool(BaseTool):
 
             async def search_async():
                 result = await tool.ainvoke({
-                    "objective": "Latest tech news",
-                    "processor": "base"
+                    "objective": "Latest tech news"
                 })
                 return result
 
@@ -161,7 +153,6 @@ class ParallelWebSearchTool(BaseTool):
                 "search_metadata": {
                     "search_duration_seconds": 2.451,
                     "search_timestamp": "2024-01-15T10:30:00",
-                    "processor_used": "base",
                     "max_results_requested": 10,
                     "actual_results_returned": 8,
                     "search_id": "search_abc123...",
@@ -187,14 +178,9 @@ class ParallelWebSearchTool(BaseTool):
                 HumanMessage(content="Search for the latest AI research papers")
             ])
 
-    Processor Options:
-        - **base**: Fast responses (4-5 seconds), good for quick searches
-        - **pro**: Higher quality results (45-70 seconds), better for research
-
     Best Practices:
         - Use specific objectives for better results
         - Apply domain filtering for focused searches
-        - Use "pro" processor for research-quality results
         - Include metadata for debugging and optimization
     """
 
@@ -202,9 +188,9 @@ class ParallelWebSearchTool(BaseTool):
     """The name that is passed to the model when performing tool calling."""
 
     description: str = (
-        "Search the web using Parallel AI's Search API. "
+        "Search the web using Parallel's Search API. "
         "Provides real-time web information with compressed, structured excerpts "
-        "optimized for LLM consumption. Supports domain filtering, multiple processors, "  # noqa: E501
+        "optimized for LLM consumption. Supports domain filtering "
         "and metadata. Specify either an objective "
         "(natural language goal) or specific search queries for targeted results."
     )
@@ -214,61 +200,31 @@ class ParallelWebSearchTool(BaseTool):
     """The schema that is passed to the model when performing tool calling."""
 
     api_key: Optional[SecretStr] = Field(default=None)
-    """Parallel AI API key. If not provided, will be read from
-    PARALLEL_AI_API_KEY env var."""
+    """Parallel API key. If not provided, will be read from
+    PARALLEL_API_KEY env var."""
 
     base_url: str = Field(default="https://api.parallel.ai")
-    """Base URL for Parallel AI API."""
+    """Base URL for Parallel API."""
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_environment(cls, values: dict) -> Any:
-        """Validate the environment."""
+    _client: Any = None
+    """Synchronous search client (initialized after validation)."""
+
+    _async_client: Any = None
+    """Asynchronous search client (initialized after validation)."""
+
+    @model_validator(mode="after")
+    def validate_environment(self) -> ParallelWebSearchTool:
+        """Validate the environment and initialize clients."""
         # Get API key from parameter or environment
-        api_key = values.get("api_key")
-        if isinstance(api_key, SecretStr):
-            api_key_str: Optional[str] = api_key.get_secret_value()
-        else:
-            api_key_str = api_key
+        api_key_str = get_api_key(
+            self.api_key.get_secret_value() if self.api_key else None
+        )
 
-        # This will raise an error if API key is not found
-        get_api_key(api_key_str)
+        # Initialize both sync and async clients once
+        self._client = get_search_client(api_key_str, self.base_url)
+        self._async_client = get_async_search_client(api_key_str, self.base_url)
 
-        return values
-
-    def _validate_inputs(
-        self,
-        objective: Optional[str],
-        search_queries: Optional[list[str]],
-        max_results: int,
-        max_chars_per_result: int,
-    ) -> None:
-        """Validate search inputs."""
-        if not objective and not search_queries:
-            msg = "Either 'objective' or 'search_queries' must be provided"
-            raise ValueError(msg)
-
-        if objective and len(objective) > 5000:
-            msg = "Objective must be 5000 characters or less"
-            raise ValueError(msg)
-
-        if search_queries and len(search_queries) > 5:
-            msg = "Maximum 5 search queries allowed"
-            raise ValueError(msg)
-
-        if search_queries:
-            for query in search_queries:
-                if len(query) > 200:
-                    msg = "Each search query must be 200 characters or less"
-                    raise ValueError(msg)
-
-        if max_results < 1 or max_results > 40:
-            msg = "max_results must be between 1 and 40"
-            raise ValueError(msg)
-
-        if max_chars_per_result < 100:
-            msg = "max_chars_per_result must be at least 100"
-            raise ValueError(msg)
+        return self
 
     def _create_response_metadata(
         self,
@@ -288,7 +244,6 @@ class ParallelWebSearchTool(BaseTool):
         metadata = {
             "search_duration_seconds": round(duration, 3),
             "search_timestamp": start_time.isoformat(),
-            "processor_used": search_params.get("processor", "base"),
             "max_results_requested": search_params.get("max_results", 10),
             "actual_results_returned": len(response.get("results", [])),
             "search_id": response.get("search_id"),
@@ -312,7 +267,6 @@ class ParallelWebSearchTool(BaseTool):
         self,
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
-        processor: Literal["base", "pro"] = "base",
         max_results: int = 10,
         max_chars_per_result: int = 1500,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
@@ -321,12 +275,11 @@ class ParallelWebSearchTool(BaseTool):
         timeout: Optional[int] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> dict[str, Any]:
-        """Execute the search using Parallel AI's Search API.
+        """Execute the search using Parallel's Search API.
 
         Args:
             objective: Natural-language description of the research goal
             search_queries: List of specific search queries
-            processor: Processor to use ("base" or "pro")
             max_results: Maximum number of results (1-40)
             max_chars_per_result: Maximum characters per result (min 100)
             source_policy: Optional source policy for domain filtering
@@ -344,23 +297,9 @@ class ParallelWebSearchTool(BaseTool):
             query_desc = objective or f"{len(search_queries or [])} search queries"
             run_manager.on_text(f"Starting web search: {query_desc}\n", color="blue")
 
-        # Validate inputs
-        self._validate_inputs(
-            objective, search_queries, max_results, max_chars_per_result
-        )
-
-        # Get API key
-        api_key_str = get_api_key(
-            self.api_key.get_secret_value() if self.api_key else None
-        )
-
-        # Initialize search client
-        client = get_search_client(api_key_str, self.base_url)
-
         search_params = {
             "objective": objective,
             "search_queries": search_queries,
-            "processor": processor,
             "max_results": max_results,
             "max_chars_per_result": max_chars_per_result,
             "source_policy": source_policy,
@@ -369,18 +308,16 @@ class ParallelWebSearchTool(BaseTool):
         try:
             # Notify about search execution
             if run_manager:
-                run_manager.on_text(
-                    f"Executing search with {processor} processor...\n", color="yellow"
-                )
+                run_manager.on_text("Executing search...\n", color="yellow")
 
-            # Perform search
-            response = client.search(
+            # Perform search using pre-initialized client
+            response = self._client.search(
                 objective=objective,
                 search_queries=search_queries,
-                processor=processor,
                 max_results=max_results,
                 max_chars_per_result=max_chars_per_result,
                 source_policy=source_policy,
+                timeout=timeout,
             )
 
             # Create metadata
@@ -405,14 +342,13 @@ class ParallelWebSearchTool(BaseTool):
             # Notify callback manager about error
             if run_manager:
                 run_manager.on_text(f"Search failed: {e!s}\n", color="red")
-            msg = f"Error calling Parallel AI Search API: {e!s}"
+            msg = f"Error calling Parallel Search API: {e!s}"
             raise ValueError(msg) from e
 
     async def _arun(
         self,
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
-        processor: Literal["base", "pro"] = "base",
         max_results: int = 10,
         max_chars_per_result: int = 1500,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
@@ -421,12 +357,11 @@ class ParallelWebSearchTool(BaseTool):
         timeout: Optional[int] = None,
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> dict[str, Any]:
-        """Async execute the search using Parallel AI's Search API.
+        """Async execute the search using Parallel's Search API.
 
         Args:
             objective: Natural-language description of the research goal
             search_queries: List of specific search queries
-            processor: Processor to use ("base" or "pro")
             max_results: Maximum number of results (1-40)
             max_chars_per_result: Maximum characters per result (min 100)
             source_policy: Optional source policy for domain filtering
@@ -446,23 +381,9 @@ class ParallelWebSearchTool(BaseTool):
                 f"Starting async web search: {query_desc}\n", color="blue"
             )
 
-        # Validate inputs
-        self._validate_inputs(
-            objective, search_queries, max_results, max_chars_per_result
-        )
-
-        # Get API key
-        api_key_str = get_api_key(
-            self.api_key.get_secret_value() if self.api_key else None
-        )
-
-        # Initialize search client
-        client = get_search_client(api_key_str, self.base_url)
-
         search_params = {
             "objective": objective,
             "search_queries": search_queries,
-            "processor": processor,
             "max_results": max_results,
             "max_chars_per_result": max_chars_per_result,
             "source_policy": source_policy,
@@ -472,22 +393,18 @@ class ParallelWebSearchTool(BaseTool):
             # Notify about search execution
             if run_manager:
                 await run_manager.on_text(
-                    f"Executing async search with {processor} processor...\n",
+                    "Executing async search...\n",
                     color="yellow",
                 )
 
-            # Run search in executor to avoid blocking the event loop
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: client.search(
-                    objective=objective,
-                    search_queries=search_queries,
-                    processor=processor,
-                    max_results=max_results,
-                    max_chars_per_result=max_chars_per_result,
-                    source_policy=source_policy,
-                ),
+            # Use the pre-initialized async client for better performance
+            response = await self._async_client.search(
+                objective=objective,
+                search_queries=search_queries,
+                max_results=max_results,
+                max_chars_per_result=max_chars_per_result,
+                source_policy=source_policy,
+                timeout=timeout,
             )
 
             # Create metadata
@@ -512,5 +429,5 @@ class ParallelWebSearchTool(BaseTool):
             # Notify callback manager about error
             if run_manager:
                 await run_manager.on_text(f"Async search failed: {e!s}\n", color="red")
-            msg = f"Error calling Parallel AI Search API: {e!s}"
+            msg = f"Error calling Parallel Search API: {e!s}"
             raise ValueError(msg) from e

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from langchain_tests.integration_tests import ToolsIntegrationTests
 
-from langchain_parallel_web.tools import ParallelWebSearchTool
+from langchain_parallel_web.search_tool import ParallelWebSearchTool
 
 
 class TestParallelWebSearchToolIntegration(ToolsIntegrationTests):
@@ -12,7 +12,7 @@ class TestParallelWebSearchToolIntegration(ToolsIntegrationTests):
 
     @property
     def tool_constructor_params(self) -> dict:
-        # API key will be read from environment variable PARALLEL_AI_API_KEY
+        # API key will be read from environment variable PARALLEL_API_KEY
         return {}
 
     @property

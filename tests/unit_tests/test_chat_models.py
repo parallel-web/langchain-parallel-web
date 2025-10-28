@@ -20,68 +20,68 @@ class TestChatParallelWebUnit(ChatModelUnitTests):
             "api_key": "test-api-key",
         }
 
-    # Configure capabilities based on Parallel AI's Chat API features
+    # Configure capabilities based on Parallel's Chat API features
     @property
     def has_tool_calling(self) -> bool:
-        """Parallel AI Chat API tool calling support - currently not implemented."""
+        """Parallel Chat API tool calling support - currently not implemented."""
         return False
 
     @property
     def has_tool_choice(self) -> bool:
-        """Parallel AI ignores tool choice parameter."""
+        """Parallel ignores tool choice parameter."""
         return False
 
     @property
     def has_structured_output(self) -> bool:
-        """Parallel AI Chat API structured output support - currently not implemented.
+        """Parallel Chat API structured output support - currently not implemented.
 
-        Currently not implemented in Parallel AI Chat API.
+        Currently not implemented in Parallel Chat API.
         """
         return False
 
     @property
     def supports_json_mode(self) -> bool:
-        """Parallel AI ignores JSON mode parameter."""
+        """Parallel ignores JSON mode parameter."""
         return False
 
     @property
     def returns_usage_metadata(self) -> bool:
-        """Parallel AI Chat API does not currently return usage metadata."""
+        """Parallel Chat API does not currently return usage metadata."""
         return False
 
     @property
     def supports_anthropic_computer_use(self) -> bool:
-        """Parallel AI Chat API does not support Anthropic computer use."""
+        """Parallel Chat API does not support Anthropic computer use."""
         return False
 
     @property
     def supports_image_inputs(self) -> bool:
-        """Parallel AI Chat API image input support - not confirmed."""
+        """Parallel Chat API image input support - not confirmed."""
         return False
 
     @property
     def supports_image_urls(self) -> bool:
-        """Parallel AI does not support image URLs."""
+        """Parallel does not support image URLs."""
         return False
 
     @property
     def supports_pdf_inputs(self) -> bool:
-        """Parallel AI does not support PDF inputs."""
+        """Parallel does not support PDF inputs."""
         return False
 
     @property
     def supports_audio_inputs(self) -> bool:
-        """Parallel AI Chat API does not support audio inputs."""
+        """Parallel Chat API does not support audio inputs."""
         return False
 
     @property
     def supports_video_inputs(self) -> bool:
-        """Parallel AI Chat API does not support video inputs."""
+        """Parallel Chat API does not support video inputs."""
         return False
 
     @property
     def supports_image_tool_message(self) -> bool:
-        """Parallel AI does not support image tool messages."""
+        """Parallel does not support image tool messages."""
         return False
 
     @property
@@ -91,7 +91,7 @@ class TestChatParallelWebUnit(ChatModelUnitTests):
 
     @property
     def supported_usage_metadata_details(self) -> dict:
-        """Parallel AI supports basic usage metadata."""
+        """Parallel supports basic usage metadata."""
         return {
             "invoke": [],
             "stream": [],
@@ -104,7 +104,7 @@ class TestChatParallelWebUnit(ChatModelUnitTests):
 
     @property
     def supports_system_messages(self) -> bool:
-        """Parallel AI Chat API supports system messages via OpenAI interface.
+        """Parallel Chat API supports system messages via OpenAI interface.
 
         Supports system messages through OpenAI-compatible API.
         """
@@ -115,7 +115,7 @@ class TestChatParallelWebUnit(ChatModelUnitTests):
         """Parameters for testing initialization from environment variables."""
         return (
             {
-                "PARALLEL_AI_API_KEY": "test-env-api-key",
+                "PARALLEL_API_KEY": "test-env-api-key",
             },
             {
                 "model": "speed",
