@@ -237,9 +237,7 @@ class ParallelExtractTool(BaseTool):
         full_content_param = full_content
         if self.max_chars_per_extract and isinstance(full_content, bool):
             # Use tool-level config if full_content is just a boolean
-            full_content_param = {
-                "max_chars_per_result": self.max_chars_per_extract
-            }
+            full_content_param = {"max_chars_per_result": self.max_chars_per_extract}
         elif isinstance(full_content, FullContentSettings):
             full_content_param = full_content.model_dump(exclude_none=True)
 

@@ -308,9 +308,7 @@ class ParallelWebSearchTool(BaseTool):
         try:
             # Notify about search execution
             if run_manager:
-                run_manager.on_text(
-                    "Executing search...\n", color="yellow"
-                )
+                run_manager.on_text("Executing search...\n", color="yellow")
 
             # Perform search using pre-initialized client
             response = self._client.search(

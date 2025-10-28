@@ -68,7 +68,9 @@ class TestParallelExtractToolIntegration:
         )
 
         assert len(result) == 1
-        assert result[0]["url"] == "https://en.wikipedia.org/wiki/Artificial_intelligence"
+        assert (
+            result[0]["url"] == "https://en.wikipedia.org/wiki/Artificial_intelligence"
+        )
         # Should have excerpts focused on the objective
         assert "excerpts" in result[0]
         assert isinstance(result[0]["excerpts"], list)

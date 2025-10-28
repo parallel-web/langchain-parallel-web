@@ -74,7 +74,7 @@ class ParallelSearchClient:
 
         # Use default timeout if not provided
         if timeout is None:
-            timeout = 10.0
+            timeout = 30.0
 
         # Use the Parallel SDK's beta.search method
         search_response = self.client.beta.search(
@@ -120,7 +120,7 @@ class AsyncParallelSearchClient:
 
         # Use default timeout if not provided
         if timeout is None:
-            timeout = 10.0
+            timeout = 30.0
 
         # Use the Parallel SDK's beta.search method
         search_response = await self.client.beta.search(

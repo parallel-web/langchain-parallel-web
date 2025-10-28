@@ -14,6 +14,27 @@ license = "MIT"
 [tool.mypy]
 disallow_untyped_defs = true
 
+# Ignore type errors from the Parallel SDK
+[[tool.mypy.overrides]]
+module = "parallel.*"
+ignore_missing_imports = true
+ignore_errors = true
+
+# Relax type checking for our SDK client wrapper
+[[tool.mypy.overrides]]
+module = "langchain_parallel_web._client"
+disable_error_code = ["arg-type"]
+
+# Relax type checking for extract tool's SDK interaction
+[[tool.mypy.overrides]]
+module = "langchain_parallel_web.extract_tool"
+disable_error_code = ["assignment"]
+
+# Allow string to SecretStr in integration tests
+[[tool.mypy.overrides]]
+module = "tests.integration_tests.*"
+disable_error_code = ["arg-type"]
+
 [tool.poetry.urls]
 "Source Code" = "https://github.com/parallel-web/langchain-parallel-web"
 "Release Notes" = "https://github.com/parallel-web/langchain-parallel-web/releases"
