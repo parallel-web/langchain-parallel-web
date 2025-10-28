@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Optional, Union
 
-from langchain_core.callbacks import CallbackManagerForToolRun
+from langchain_core.callbacks import (
+    AsyncCallbackManagerForToolRun,
+    CallbackManagerForToolRun,
+)
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, SecretStr, model_validator
 
@@ -336,11 +339,23 @@ class ParallelExtractTool(BaseTool):
         Returns:
             List of dictionaries with extracted content
         """
+        # Notify callback manager about extraction start
+        if run_manager:
+            url_count = len(urls)
+            url_desc = f"{url_count} URL{'s' if url_count != 1 else ''}"
+            run_manager.on_text(
+                f"Starting content extraction from {url_desc}\n", color="blue"
+            )
+
         try:
             # Prepare parameters for the extract API call
             excerpts_param, full_content_param, fetch_policy_param = (
                 self._prepare_extract_params(excerpts, full_content, fetch_policy)
             )
+
+            # Notify about extraction execution
+            if run_manager:
+                run_manager.on_text("Executing extraction...\n", color="yellow")
 
             # Extract content from URLs using the pre-initialized client
             extract_response = self._client.extract(
@@ -354,9 +369,31 @@ class ParallelExtractTool(BaseTool):
             )
 
             # Format and return the response
-            return self._format_extract_response(extract_response)
+            result = self._format_extract_response(extract_response)
+
+            # Notify callback manager about completion
+            if run_manager:
+                success_count = sum(1 for item in result if "error_type" not in item)
+                error_count = len(result) - success_count
+                if error_count > 0:
+                    run_manager.on_text(
+                        f"Extraction completed: {success_count} succeeded, "
+                        f"{error_count} failed\n",
+                        color="green",
+                    )
+                else:
+                    url_text = "URL" if success_count == 1 else "URLs"
+                    run_manager.on_text(
+                        f"Extraction completed: {success_count} {url_text} processed\n",
+                        color="green",
+                    )
+
+            return result
 
         except Exception as e:
+            # Notify callback manager about error
+            if run_manager:
+                run_manager.on_text(f"Extraction failed: {e!s}\n", color="red")
             msg = f"Error calling Parallel Extract API: {e!s}"
             raise ValueError(msg) from e
 
@@ -369,7 +406,7 @@ class ParallelExtractTool(BaseTool):
         full_content: Union[bool, FullContentSettings] = False,
         fetch_policy: Optional[FetchPolicy] = None,
         timeout: Optional[float] = None,
-        run_manager: Optional[CallbackManagerForToolRun] = None,
+        run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> list[dict[str, Any]]:
         """Extract content from URLs asynchronously.
 
@@ -381,16 +418,30 @@ class ParallelExtractTool(BaseTool):
             full_content: Include full content (boolean or FullContentSettings)
             fetch_policy: Optional fetch policy for cache vs live content
             timeout: Request timeout in seconds (defaults to 5 seconds per URL)
-            run_manager: Callback manager for the tool run
+            run_manager: Async callback manager for the tool run
 
         Returns:
             List of dictionaries with extracted content
         """
+        # Notify callback manager about extraction start
+        if run_manager:
+            url_count = len(urls)
+            url_desc = f"{url_count} URL{'s' if url_count != 1 else ''}"
+            await run_manager.on_text(
+                f"Starting async content extraction from {url_desc}\n", color="blue"
+            )
+
         try:
             # Prepare parameters for the extract API call
             excerpts_param, full_content_param, fetch_policy_param = (
                 self._prepare_extract_params(excerpts, full_content, fetch_policy)
             )
+
+            # Notify about extraction execution
+            if run_manager:
+                await run_manager.on_text(
+                    "Executing async extraction...\n", color="yellow"
+                )
 
             # Extract content from URLs using the pre-initialized async client
             extract_response = await self._async_client.extract(
@@ -404,8 +455,33 @@ class ParallelExtractTool(BaseTool):
             )
 
             # Format and return the response
-            return self._format_extract_response(extract_response)
+            result = self._format_extract_response(extract_response)
+
+            # Notify callback manager about completion
+            if run_manager:
+                success_count = sum(1 for item in result if "error_type" not in item)
+                error_count = len(result) - success_count
+                if error_count > 0:
+                    await run_manager.on_text(
+                        f"Async extraction completed: {success_count} succeeded, "
+                        f"{error_count} failed\n",
+                        color="green",
+                    )
+                else:
+                    url_text = "URL" if success_count == 1 else "URLs"
+                    await run_manager.on_text(
+                        f"Async extraction completed: {success_count} {url_text} "
+                        f"processed\n",
+                        color="green",
+                    )
+
+            return result
 
         except Exception as e:
+            # Notify callback manager about error
+            if run_manager:
+                await run_manager.on_text(
+                    f"Async extraction failed: {e!s}\n", color="red"
+                )
             msg = f"Error calling Parallel Extract API: {e!s}"
             raise ValueError(msg) from e
