@@ -158,15 +158,12 @@ class TestParallelWebSearchTool:
             tool = ParallelWebSearchTool()
             result = tool._run(
                 search_queries=["query1", "query2"],
-                processor="pro",
                 include_metadata=True,
             )
 
             assert "search_metadata" in result
             metadata = result["search_metadata"]
             assert "search_duration_seconds" in metadata
-            assert "processor_used" in metadata
-            assert metadata["processor_used"] == "pro"
             assert "query_count" in metadata
             assert metadata["query_count"] == 2
 

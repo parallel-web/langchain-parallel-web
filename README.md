@@ -193,7 +193,6 @@ search_tool = ParallelWebSearchTool()
 # Search with an objective
 result = search_tool.invoke({
     "objective": "What are the latest developments in renewable energy?",
-    "processor": "base",  # "base" for speed, "pro" for quality
     "max_results": 5
 })
 
@@ -223,18 +222,10 @@ print(result)
 |-----------|------|---------|-------------|
 | `objective` | `Optional[str]` | `None` | Natural-language description of research goal |
 | `search_queries` | `Optional[List[str]]` | `None` | Specific search queries (max 5, 200 chars each) |
-| `processor` | `Literal["base", "pro"]` | `"base"` | Processing tier: "base" (fast) or "pro" (quality) |
 | `max_results` | `int` | `10` | Maximum results to return (1-40) |
 | `max_chars_per_result` | `int` | `1500` | Maximum characters per result (min 100) |
 | `api_key` | `Optional[SecretStr]` | `None` | API key (uses env var if not provided) |
 | `base_url` | `str` | `"https://api.parallel.ai"` | API base URL |
-
-### Processor Comparison
-
-| Processor | Speed | Cost | Quality | Use Case |
-|-----------|-------|------|---------|----------|
-| **base** | 4-5s | Lower | Good | Real-time applications, quick searches |
-| **pro** | 45-70s | Higher | Excellent | Research, analysis |
 
 ### Search with Specific Queries
 
@@ -248,7 +239,6 @@ result = search_tool.invoke({
         "solar power developments",
         "wind energy statistics"
     ],
-    "processor": "pro",
     "max_results": 8
 })
 ```
@@ -472,18 +462,15 @@ The Extract API provides clean content extraction from web pages:
 - **Use Cases**: Interactive chat, real-time responses
 
 ### Search API
-The Search API offers two processor tiers with different performance characteristics:
-
-| Processor | p90 Latency | Cost ($/1000) | Max Results | Best For |
-|-----------|-------------|---------------|-------------|----------|
-| **base** | 4-5s | $4 | 40 | Fast searches, real-time applications |
-| **pro** | 45-70s | $9 | 40 | Research, comprehensive analysis |
+- **Default Rate Limit**: Contact Parallel for rate limit information
+- **Performance**: Varies based on query complexity and result count
+- **Use Cases**: Real-time web information, research, content discovery
 
 ### Production Usage
 Contact [Parallel](https://parallel.ai/) for:
 - Higher rate limits
 - Enterprise features
-- Custom processor configurations
+- Custom configurations
 
 ## Contributing
 
@@ -513,6 +500,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Search Tools**: ParallelWebSearchTool for direct API access
 - **Extract Tools**: ParallelExtractTool for clean content extraction
 - Streaming and async/await support
-- Two processor tiers (base/pro) for search
 - Batch URL extraction with error handling
 - Full LangChain ecosystem compatibility

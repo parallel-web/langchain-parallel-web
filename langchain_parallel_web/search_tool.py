@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal, Optional, Union
+from typing import Any, Optional, Union
 
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
@@ -29,11 +29,6 @@ class ParallelWebSearchInput(BaseModel):
         description="Optional list of search queries to guide the search. "
         "Maximum 5 queries, each up to 200 characters. Either this or objective "
         "must be provided.",
-    )
-    processor: Literal["base", "pro"] = Field(
-        default="base",
-        description="Processor to use. 'base' for fast responses (4-5s), "
-        "'pro' for higher quality (45-70s).",
     )
     max_results: int = Field(
         default=10, description="Maximum number of search results to return (1 to 40)."
@@ -113,13 +108,12 @@ class ParallelWebSearchTool(BaseTool):
                 "max_results": 10
             })
 
-    Domain filtering and processor selection:
+    Domain filtering:
         .. code-block:: python
 
-            # Domain filtering and processor selection
+            # Domain filtering
             result = tool.invoke({
                 "objective": "Recent climate change research",
-                "processor": "pro",  # Higher quality, slower
                 "source_policy": {
                     "include_domains": ["nature.com", "science.org"],
                     "exclude_domains": ["reddit.com", "twitter.com"]
@@ -135,8 +129,7 @@ class ParallelWebSearchTool(BaseTool):
 
             async def search_async():
                 result = await tool.ainvoke({
-                    "objective": "Latest tech news",
-                    "processor": "base"
+                    "objective": "Latest tech news"
                 })
                 return result
 
@@ -160,7 +153,6 @@ class ParallelWebSearchTool(BaseTool):
                 "search_metadata": {
                     "search_duration_seconds": 2.451,
                     "search_timestamp": "2024-01-15T10:30:00",
-                    "processor_used": "base",
                     "max_results_requested": 10,
                     "actual_results_returned": 8,
                     "search_id": "search_abc123...",
@@ -186,14 +178,9 @@ class ParallelWebSearchTool(BaseTool):
                 HumanMessage(content="Search for the latest AI research papers")
             ])
 
-    Processor Options:
-        - **base**: Fast responses (4-5 seconds), good for quick searches
-        - **pro**: Higher quality results (45-70 seconds), better for research
-
     Best Practices:
         - Use specific objectives for better results
         - Apply domain filtering for focused searches
-        - Use "pro" processor for research-quality results
         - Include metadata for debugging and optimization
     """
 
@@ -203,7 +190,7 @@ class ParallelWebSearchTool(BaseTool):
     description: str = (
         "Search the web using Parallel's Search API. "
         "Provides real-time web information with compressed, structured excerpts "
-        "optimized for LLM consumption. Supports domain filtering, multiple processors, "  # noqa: E501
+        "optimized for LLM consumption. Supports domain filtering "
         "and metadata. Specify either an objective "
         "(natural language goal) or specific search queries for targeted results."
     )
@@ -287,7 +274,6 @@ class ParallelWebSearchTool(BaseTool):
         metadata = {
             "search_duration_seconds": round(duration, 3),
             "search_timestamp": start_time.isoformat(),
-            "processor_used": search_params.get("processor", "base"),
             "max_results_requested": search_params.get("max_results", 10),
             "actual_results_returned": len(response.get("results", [])),
             "search_id": response.get("search_id"),
@@ -311,7 +297,6 @@ class ParallelWebSearchTool(BaseTool):
         self,
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
-        processor: Literal["base", "pro"] = "base",
         max_results: int = 10,
         max_chars_per_result: int = 1500,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
@@ -325,7 +310,6 @@ class ParallelWebSearchTool(BaseTool):
         Args:
             objective: Natural-language description of the research goal
             search_queries: List of specific search queries
-            processor: Processor to use ("base" or "pro")
             max_results: Maximum number of results (1-40)
             max_chars_per_result: Maximum characters per result (min 100)
             source_policy: Optional source policy for domain filtering
@@ -359,7 +343,6 @@ class ParallelWebSearchTool(BaseTool):
         search_params = {
             "objective": objective,
             "search_queries": search_queries,
-            "processor": processor,
             "max_results": max_results,
             "max_chars_per_result": max_chars_per_result,
             "source_policy": source_policy,
@@ -369,14 +352,13 @@ class ParallelWebSearchTool(BaseTool):
             # Notify about search execution
             if run_manager:
                 run_manager.on_text(
-                    f"Executing search with {processor} processor...\n", color="yellow"
+                    "Executing search...\n", color="yellow"
                 )
 
             # Perform search
             response = client.search(
                 objective=objective,
                 search_queries=search_queries,
-                processor=processor,
                 max_results=max_results,
                 max_chars_per_result=max_chars_per_result,
                 source_policy=source_policy,
@@ -411,7 +393,6 @@ class ParallelWebSearchTool(BaseTool):
         self,
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
-        processor: Literal["base", "pro"] = "base",
         max_results: int = 10,
         max_chars_per_result: int = 1500,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
@@ -425,7 +406,6 @@ class ParallelWebSearchTool(BaseTool):
         Args:
             objective: Natural-language description of the research goal
             search_queries: List of specific search queries
-            processor: Processor to use ("base" or "pro")
             max_results: Maximum number of results (1-40)
             max_chars_per_result: Maximum characters per result (min 100)
             source_policy: Optional source policy for domain filtering
@@ -461,7 +441,6 @@ class ParallelWebSearchTool(BaseTool):
         search_params = {
             "objective": objective,
             "search_queries": search_queries,
-            "processor": processor,
             "max_results": max_results,
             "max_chars_per_result": max_chars_per_result,
             "source_policy": source_policy,
@@ -471,7 +450,7 @@ class ParallelWebSearchTool(BaseTool):
             # Notify about search execution
             if run_manager:
                 await run_manager.on_text(
-                    f"Executing async search with {processor} processor...\n",
+                    "Executing async search...\n",
                     color="yellow",
                 )
 
@@ -479,7 +458,6 @@ class ParallelWebSearchTool(BaseTool):
             response = await client.search(
                 objective=objective,
                 search_queries=search_queries,
-                processor=processor,
                 max_results=max_results,
                 max_chars_per_result=max_chars_per_result,
                 source_policy=source_policy,

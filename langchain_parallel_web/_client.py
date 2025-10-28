@@ -44,12 +44,6 @@ def get_async_openai_client(api_key: str, base_url: str) -> openai.AsyncOpenAI:
     """Returns a configured async OpenAI client for the Chat API."""
     return openai.AsyncOpenAI(api_key=api_key, base_url=base_url)
 
-def _get_search_timeout(processor: str) -> float:
-    """Get the timeout for the search API based on the processor type."""
-    # Set timeout based on processor type:
-    # - base processor: 10 seconds (typical 4-5s response time)
-    # - pro processor: 90 seconds (typical 45-70s response time)
-    return 90.0 if processor == "pro" else 10.0
 
 class ParallelSearchClient:
     """Synchronous client for Parallel Search API using the Parallel SDK."""
@@ -68,7 +62,6 @@ class ParallelSearchClient:
         self,
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
-        processor: str = "base",
         max_results: int = 10,
         max_chars_per_result: int = 1500,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
@@ -78,16 +71,15 @@ class ParallelSearchClient:
             msg = "Either 'objective' or 'search_queries' must be provided"
             raise ValueError(msg)
 
-
         # Use the Parallel SDK's beta.search method
         search_response = self.client.beta.search(
             objective=objective,
             search_queries=search_queries,
-            processor=processor,
             max_results=max_results,
             max_chars_per_result=max_chars_per_result,
             source_policy=source_policy,
-            timeout=_get_search_timeout(processor),
+            betas=["search-extract-2025-10-10"],
+            timeout=10.0,
         )
 
         # Convert the SDK response to a dictionary
@@ -111,7 +103,6 @@ class AsyncParallelSearchClient:
         self,
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
-        processor: str = "base",
         max_results: int = 10,
         max_chars_per_result: int = 1500,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
@@ -125,11 +116,11 @@ class AsyncParallelSearchClient:
         search_response = await self.client.beta.search(
             objective=objective,
             search_queries=search_queries,
-            processor=processor,
             max_results=max_results,
             max_chars_per_result=max_chars_per_result,
             source_policy=source_policy,
-            timeout=_get_search_timeout(processor),
+            betas=["search-extract-2025-10-10"],
+            timeout=10.0,
         )
 
         # Convert the SDK response to a dictionary
