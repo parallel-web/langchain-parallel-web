@@ -9,7 +9,7 @@
     'kwargs': dict({
       'api_key': dict({
         'id': list([
-          'PARALLEL_AI_API_KEY',
+          'PARALLEL_API_KEY',
         ]),
         'lc': 1,
         'type': 'secret',

@@ -12,7 +12,7 @@ class TestParallelWebSearchToolIntegration(ToolsIntegrationTests):
 
     @property
     def tool_constructor_params(self) -> dict:
-        # API key will be read from environment variable PARALLEL_AI_API_KEY
+        # API key will be read from environment variable PARALLEL_API_KEY
         return {}
 
     @property

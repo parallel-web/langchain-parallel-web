@@ -35,7 +35,7 @@ Both integrations follow the official [LangChain standard testing framework](htt
 ### 2. Integration Tests (`tests/integration_tests/`)
 - **Purpose**: Test components with real API calls
 - **Network**: Enabled (requires internet connection)
-- **API Key**: Requires valid `PARALLEL_AI_API_KEY` environment variable
+- **API Key**: Requires valid `PARALLEL_API_KEY` environment variable
 - **Files**:
   - `test_chat_models.py` - Chat model integration tests
   - `test_tools.py` - Search tool integration tests
@@ -51,7 +51,7 @@ poetry run pytest --disable-socket --allow-unix-socket --asyncio-mode=auto tests
 ### Integration Tests (Requires API Key)
 ```bash
 # Set your API key first
-export PARALLEL_AI_API_KEY="your-actual-api-key-here"
+export PARALLEL_API_KEY="your-actual-api-key-here"
 
 # Run integration tests
 poetry run pytest --asyncio-mode=auto tests/integration_tests/ -v

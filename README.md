@@ -24,7 +24,7 @@ pip install langchain-parallel-web
 2. Set your API key as an environment variable:
 
 ```bash
-export PARALLEL_AI_API_KEY="your-api-key-here"
+export PARALLEL_API_KEY="your-api-key-here"
 ```
 
 ## Chat Models
@@ -108,7 +108,7 @@ print(response.content)
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `model` | `str` | `"speed"` | Parallel model name |
-| `api_key` | `Optional[SecretStr]` | `None` | API key (uses `PARALLEL_AI_API_KEY` env var if not provided) |
+| `api_key` | `Optional[SecretStr]` | `None` | API key (uses `PARALLEL_API_KEY` env var if not provided) |
 | `base_url` | `str` | `"https://api.parallel.ai"` | API base URL |
 | `temperature` | `Optional[float]` | `None` | Sampling temperature (ignored by Parallel) |
 | `max_tokens` | `Optional[int]` | `None` | Max tokens (ignored by Parallel) |
@@ -394,7 +394,7 @@ try:
     print(response.content)
 except ValueError as e:
     if "API key not found" in str(e):
-        print("Please set your PARALLEL_AI_API_KEY environment variable")
+        print("Please set your PARALLEL_API_KEY environment variable")
     else:
         print(f"API Error: {e}")
 except Exception as e:

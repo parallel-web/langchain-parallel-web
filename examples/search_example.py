@@ -8,7 +8,7 @@ from typing import Any
 
 from langchain_parallel_web import ParallelWebSearchTool
 
-# Set your API key: export PARALLEL_AI_API_KEY="your-api-key"
+# Set your API key: export PARALLEL_API_KEY="your-api-key"
 
 
 def basic_search_examples() -> None:
@@ -265,9 +265,9 @@ async def main() -> None:
     print("=== Parallel Search Examples ===")
 
     # Check if API key is set
-    if not os.getenv("PARALLEL_AI_API_KEY"):
-        print("Error: PARALLEL_AI_API_KEY environment variable not set")
-        print("Please set your API key: export PARALLEL_AI_API_KEY='your-api-key'")
+    if not os.getenv("PARALLEL_API_KEY"):
+        print("Error: PARALLEL_API_KEY environment variable not set")
+        print("Please set your API key: export PARALLEL_API_KEY='your-api-key'")
         return
 
     print("API key found in environment")
@@ -311,8 +311,8 @@ def run_sync_examples() -> None:
     """Run only synchronous examples for testing."""
     print("=== Running Synchronous Examples Only ===")
 
-    if not os.getenv("PARALLEL_AI_API_KEY"):
-        print("Error: PARALLEL_AI_API_KEY environment variable not set")
+    if not os.getenv("PARALLEL_API_KEY"):
+        print("Error: PARALLEL_API_KEY environment variable not set")
         return
 
     try:

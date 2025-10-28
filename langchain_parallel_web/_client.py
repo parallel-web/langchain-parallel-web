@@ -24,13 +24,13 @@ def get_api_key(api_key: Optional[str] = None) -> str:
     if api_key:
         return api_key
 
-    env_key = os.environ.get("PARALLEL_AI_API_KEY")
+    env_key = os.environ.get("PARALLEL_API_KEY")
     if env_key:
         return env_key
 
     msg = (
         "Parallel API key not found. Please pass it as an argument or set the "
-        "PARALLEL_AI_API_KEY environment variable."
+        "PARALLEL_API_KEY environment variable."
     )
     raise ValueError(msg)
 

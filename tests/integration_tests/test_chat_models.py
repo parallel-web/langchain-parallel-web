@@ -16,7 +16,7 @@ class TestChatParallelWebIntegration(ChatModelIntegrationTests):
     def chat_model_params(self) -> dict:
         return {
             "model": "speed",
-            # API key will be read from environment variable PARALLEL_AI_API_KEY
+            # API key will be read from environment variable PARALLEL_API_KEY
         }
 
     # Configure capabilities based on Parallel's Chat API features

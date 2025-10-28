@@ -9,7 +9,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 
 from langchain_parallel_web import ChatParallelWeb
 
-# Set your API key: export PARALLEL_AI_API_KEY="your-api-key"
+# Set your API key: export PARALLEL_API_KEY="your-api-key"
 
 
 def basic_example() -> None:
@@ -48,7 +48,7 @@ def basic_example() -> None:
 
     except ValueError as e:
         if "API key not found" in str(e):
-            print("Error: API key not found. Please set PARALLEL_AI_API_KEY")
+            print("Error: API key not found. Please set PARALLEL_API_KEY")
         else:
             print(f"Error: {e}")
 
@@ -77,7 +77,7 @@ def streaming_example() -> None:
 
     except ValueError as e:
         if "API key not found" in str(e):
-            print("Error: API key not found. Please set PARALLEL_AI_API_KEY")
+            print("Error: API key not found. Please set PARALLEL_API_KEY")
         else:
             print(f"Error: {e}")
 
@@ -112,7 +112,7 @@ async def async_example() -> None:
 
     except ValueError as e:
         if "API key not found" in str(e):
-            print("Error: API key not found. Please set PARALLEL_AI_API_KEY")
+            print("Error: API key not found. Please set PARALLEL_API_KEY")
         else:
             print(f"Error: {e}")
 
@@ -155,7 +155,7 @@ def conversation_example() -> None:
 
     except ValueError as e:
         if "API key not found" in str(e):
-            print("Error: API key not found. Please set PARALLEL_AI_API_KEY")
+            print("Error: API key not found. Please set PARALLEL_API_KEY")
         else:
             print(f"Error: {e}")
 
@@ -165,9 +165,9 @@ def main() -> None:
     print("=== Parallel Chat Examples ===")
 
     # Check if API key is set
-    if not os.getenv("PARALLEL_AI_API_KEY"):
-        print("Error: PARALLEL_AI_API_KEY environment variable not set")
-        print("Please set your API key: export PARALLEL_AI_API_KEY='your-api-key'")
+    if not os.getenv("PARALLEL_API_KEY"):
+        print("Error: PARALLEL_API_KEY environment variable not set")
+        print("Please set your API key: export PARALLEL_API_KEY='your-api-key'")
         return
 
     print("API key found in environment")

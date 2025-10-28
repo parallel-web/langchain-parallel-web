@@ -133,12 +133,12 @@ class ChatParallelWeb(BaseChatModel):
 
     Setup:
         Install ``langchain-parallel-web`` and set environment variable
-        ``PARALLEL_AI_API_KEY``.
+        ``PARALLEL_API_KEY``.
 
         .. code-block:: bash
 
             pip install -U langchain-parallel-web
-            export PARALLEL_AI_API_KEY="your-api-key"
+            export PARALLEL_API_KEY="your-api-key"
 
     Key init args — completion params:
         model: str
@@ -155,7 +155,7 @@ class ChatParallelWeb(BaseChatModel):
             Max number of retries.
         api_key: Optional[str]
             Parallel API key. If not passed in will be read from env var
-            PARALLEL_AI_API_KEY.
+            PARALLEL_API_KEY.
         base_url: str
             Base URL for Parallel API. Defaults to "https://api.parallel.ai".
 
@@ -224,7 +224,7 @@ class ChatParallelWeb(BaseChatModel):
 
     api_key: Optional[SecretStr] = Field(default=None)
     """Parallel API key. If not provided, will be read from
-    PARALLEL_AI_API_KEY env var."""
+    PARALLEL_API_KEY env var."""
 
     base_url: str = Field(default="https://api.parallel.ai")
     """Base URL for Parallel API."""
@@ -334,7 +334,7 @@ class ChatParallelWeb(BaseChatModel):
     @property
     def lc_secrets(self) -> dict[str, str]:
         """Return secrets for LangChain serialization."""
-        return {"api_key": "PARALLEL_AI_API_KEY"}
+        return {"api_key": "PARALLEL_API_KEY"}
 
     @property
     def lc_attributes(self) -> dict[str, Any]:

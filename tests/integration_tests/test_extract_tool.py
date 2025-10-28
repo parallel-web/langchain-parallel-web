@@ -10,9 +10,9 @@ from langchain_parallel_web.extract_tool import ParallelExtractTool
 @pytest.fixture
 def api_key() -> str:
     """Get API key from environment."""
-    key = os.environ.get("PARALLEL_AI_API_KEY")
+    key = os.environ.get("PARALLEL_API_KEY")
     if not key:
-        pytest.skip("PARALLEL_AI_API_KEY not set")
+        pytest.skip("PARALLEL_API_KEY not set")
     return key
 
 

@@ -70,17 +70,17 @@ class ParallelWebSearchTool(BaseTool):
 
     Setup:
         Install ``langchain-parallel-web`` and set environment variable
-        ``PARALLEL_AI_API_KEY``.
+        ``PARALLEL_API_KEY``.
 
         .. code-block:: bash
 
             pip install -U langchain-parallel-web
-            export PARALLEL_AI_API_KEY="your-api-key"
+            export PARALLEL_API_KEY="your-api-key"
 
     Key init args:
         api_key: Optional[SecretStr]
             Parallel API key. If not provided, will be read from
-            PARALLEL_AI_API_KEY env var.
+            PARALLEL_API_KEY env var.
         base_url: str
             Base URL for Parallel API. Defaults to "https://api.parallel.ai".
 
@@ -214,7 +214,7 @@ class ParallelWebSearchTool(BaseTool):
 
     api_key: Optional[SecretStr] = Field(default=None)
     """Parallel API key. If not provided, will be read from
-    PARALLEL_AI_API_KEY env var."""
+    PARALLEL_API_KEY env var."""
 
     base_url: str = Field(default="https://api.parallel.ai")
     """Base URL for Parallel API."""

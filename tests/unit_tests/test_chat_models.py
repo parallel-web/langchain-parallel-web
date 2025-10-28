@@ -115,7 +115,7 @@ class TestChatParallelWebUnit(ChatModelUnitTests):
         """Parameters for testing initialization from environment variables."""
         return (
             {
-                "PARALLEL_AI_API_KEY": "test-env-api-key",
+                "PARALLEL_API_KEY": "test-env-api-key",
             },
             {
                 "model": "speed",
