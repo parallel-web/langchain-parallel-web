@@ -281,12 +281,12 @@ class ParallelExtractTool(BaseTool):
             if "excerpts" in result and result["excerpts"] is not None:
                 formatted_result["excerpts"] = result["excerpts"]
                 # Combine excerpts into content field for backward compatibility
-                if "full_content" not in result:
-                    # Excerpts are a list of strings, join them with newlines
-                    formatted_result["content"] = "\n\n".join(result["excerpts"])
+                # Excerpts are a list of strings, join them with newlines
+                formatted_result["content"] = "\n\n".join(result["excerpts"])
 
-            # Add full_content if present
-            if "full_content" in result:
+            # Add full_content if present and not None
+            # (overrides excerpts-based content)
+            if "full_content" in result and result["full_content"] is not None:
                 formatted_result["full_content"] = result["full_content"]
                 # For backward compatibility, also set as "content"
                 formatted_result["content"] = result["full_content"]

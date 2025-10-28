@@ -133,10 +133,12 @@ class TestParallelExtractToolIntegration:
         """Test extraction handles invalid URLs gracefully."""
         tool = ParallelExtractTool(api_key=api_key)
 
+        # The API handles invalid URLs gracefully by returning error info
         result = tool.invoke(
             {
                 "urls": ["https://this-domain-does-not-exist-12345.com/"],
                 "full_content": True,
+                "timeout": 10.0,  # Reasonable timeout
             }
         )
 
