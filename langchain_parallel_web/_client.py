@@ -65,11 +65,16 @@ class ParallelSearchClient:
         max_results: int = 10,
         max_chars_per_result: int = 1500,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
+        timeout: Optional[float] = None,
     ) -> dict[str, Any]:
         """Perform a synchronous search using the Parallel Search API via SDK."""
         if not objective and not search_queries:
             msg = "Either 'objective' or 'search_queries' must be provided"
             raise ValueError(msg)
+
+        # Use default timeout if not provided
+        if timeout is None:
+            timeout = 10.0
 
         # Use the Parallel SDK's beta.search method
         search_response = self.client.beta.search(
@@ -79,7 +84,7 @@ class ParallelSearchClient:
             max_chars_per_result=max_chars_per_result,
             source_policy=source_policy,
             betas=["search-extract-2025-10-10"],
-            timeout=10.0,
+            timeout=timeout,
         )
 
         # Convert the SDK response to a dictionary
@@ -106,11 +111,16 @@ class AsyncParallelSearchClient:
         max_results: int = 10,
         max_chars_per_result: int = 1500,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
+        timeout: Optional[float] = None,
     ) -> dict[str, Any]:
         """Perform an async search using the Parallel Search API via SDK."""
         if not objective and not search_queries:
             msg = "Either 'objective' or 'search_queries' must be provided"
             raise ValueError(msg)
+
+        # Use default timeout if not provided
+        if timeout is None:
+            timeout = 10.0
 
         # Use the Parallel SDK's beta.search method
         search_response = await self.client.beta.search(
@@ -120,7 +130,7 @@ class AsyncParallelSearchClient:
             max_chars_per_result=max_chars_per_result,
             source_policy=source_policy,
             betas=["search-extract-2025-10-10"],
-            timeout=10.0,
+            timeout=timeout,
         )
 
         # Convert the SDK response to a dictionary
@@ -162,14 +172,16 @@ class ParallelExtractClient:
         excerpts: Optional[Union[bool, dict[str, Any]]] = None,
         full_content: Optional[Union[bool, dict[str, Any]]] = None,
         fetch_policy: Optional[dict[str, Any]] = None,
+        timeout: Optional[float] = None,
     ) -> dict[str, Any]:
         """Perform a synchronous extract using the Parallel Extract API via SDK."""
         if not urls:
             msg = "At least one URL must be provided"
             raise ValueError(msg)
 
-        # Set timeout based on number of URLs (5 seconds per URL)
-        timeout = 5.0 * len(urls)
+        # Use default timeout if not provided (5 seconds per URL)
+        if timeout is None:
+            timeout = 5.0 * len(urls)
 
         # Use the Parallel SDK's beta.extract method
         extract_response = self.client.beta.extract(
@@ -208,14 +220,16 @@ class AsyncParallelExtractClient:
         excerpts: Optional[Union[bool, dict[str, Any]]] = None,
         full_content: Optional[Union[bool, dict[str, Any]]] = None,
         fetch_policy: Optional[dict[str, Any]] = None,
+        timeout: Optional[float] = None,
     ) -> dict[str, Any]:
         """Perform an async extract using the Parallel Extract API via SDK."""
         if not urls:
             msg = "At least one URL must be provided"
             raise ValueError(msg)
 
-        # Set timeout based on number of URLs (5 seconds per URL)
-        timeout = 5.0 * len(urls)
+        # Use default timeout if not provided (5 seconds per URL)
+        if timeout is None:
+            timeout = 5.0 * len(urls)
 
         # Use the Parallel SDK's beta.extract method
         extract_response = await self.client.beta.extract(

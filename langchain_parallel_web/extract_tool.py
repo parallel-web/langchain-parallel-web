@@ -105,6 +105,14 @@ class ParallelExtractInput(BaseModel):
         ),
     )
 
+    timeout: Optional[float] = Field(
+        default=None,
+        description=(
+            "Request timeout in seconds. If not specified, uses default of "
+            "5 seconds per URL."
+        ),
+    )
+
 
 class ParallelExtractTool(BaseTool):
     """Parallel Extract Tool.
@@ -310,6 +318,7 @@ class ParallelExtractTool(BaseTool):
         excerpts: Union[bool, ExcerptSettings] = True,
         full_content: Union[bool, FullContentSettings] = False,
         fetch_policy: Optional[FetchPolicy] = None,
+        timeout: Optional[float] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> list[dict[str, Any]]:
         """Extract content from URLs.
@@ -321,6 +330,7 @@ class ParallelExtractTool(BaseTool):
             excerpts: Include excerpts (boolean or ExcerptSettings)
             full_content: Include full content (boolean or FullContentSettings)
             fetch_policy: Optional fetch policy for cache vs live content
+            timeout: Request timeout in seconds (defaults to 5 seconds per URL)
             run_manager: Callback manager for the tool run
 
         Returns:
@@ -340,6 +350,7 @@ class ParallelExtractTool(BaseTool):
                 excerpts=excerpts_param,
                 full_content=full_content_param,
                 fetch_policy=fetch_policy_param,
+                timeout=timeout,
             )
 
             # Format and return the response
@@ -357,6 +368,7 @@ class ParallelExtractTool(BaseTool):
         excerpts: Union[bool, ExcerptSettings] = True,
         full_content: Union[bool, FullContentSettings] = False,
         fetch_policy: Optional[FetchPolicy] = None,
+        timeout: Optional[float] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> list[dict[str, Any]]:
         """Extract content from URLs asynchronously.
@@ -368,6 +380,7 @@ class ParallelExtractTool(BaseTool):
             excerpts: Include excerpts (boolean or ExcerptSettings)
             full_content: Include full content (boolean or FullContentSettings)
             fetch_policy: Optional fetch policy for cache vs live content
+            timeout: Request timeout in seconds (defaults to 5 seconds per URL)
             run_manager: Callback manager for the tool run
 
         Returns:
@@ -387,6 +400,7 @@ class ParallelExtractTool(BaseTool):
                 excerpts=excerpts_param,
                 full_content=full_content_param,
                 fetch_policy=fetch_policy_param,
+                timeout=timeout,
             )
 
             # Format and return the response

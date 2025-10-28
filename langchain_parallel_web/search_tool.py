@@ -206,55 +206,25 @@ class ParallelWebSearchTool(BaseTool):
     base_url: str = Field(default="https://api.parallel.ai")
     """Base URL for Parallel API."""
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_environment(cls, values: dict) -> Any:
-        """Validate the environment."""
+    _client: Any = None
+    """Synchronous search client (initialized after validation)."""
+
+    _async_client: Any = None
+    """Asynchronous search client (initialized after validation)."""
+
+    @model_validator(mode="after")
+    def validate_environment(self) -> ParallelWebSearchTool:
+        """Validate the environment and initialize clients."""
         # Get API key from parameter or environment
-        api_key = values.get("api_key")
-        if isinstance(api_key, SecretStr):
-            api_key_str: Optional[str] = api_key.get_secret_value()
-        else:
-            api_key_str = api_key
+        api_key_str = get_api_key(
+            self.api_key.get_secret_value() if self.api_key else None
+        )
 
-        # This will raise an error if API key is not found
-        get_api_key(api_key_str)
+        # Initialize both sync and async clients once
+        self._client = get_search_client(api_key_str, self.base_url)
+        self._async_client = get_async_search_client(api_key_str, self.base_url)
 
-        return values
-
-    def _validate_inputs(
-        self,
-        objective: Optional[str],
-        search_queries: Optional[list[str]],
-        max_results: int,
-        max_chars_per_result: int,
-    ) -> None:
-        """Validate search inputs."""
-        if not objective and not search_queries:
-            msg = "Either 'objective' or 'search_queries' must be provided"
-            raise ValueError(msg)
-
-        if objective and len(objective) > 5000:
-            msg = "Objective must be 5000 characters or less"
-            raise ValueError(msg)
-
-        if search_queries and len(search_queries) > 5:
-            msg = "Maximum 5 search queries allowed"
-            raise ValueError(msg)
-
-        if search_queries:
-            for query in search_queries:
-                if len(query) > 200:
-                    msg = "Each search query must be 200 characters or less"
-                    raise ValueError(msg)
-
-        if max_results < 1 or max_results > 40:
-            msg = "max_results must be between 1 and 40"
-            raise ValueError(msg)
-
-        if max_chars_per_result < 100:
-            msg = "max_chars_per_result must be at least 100"
-            raise ValueError(msg)
+        return self
 
     def _create_response_metadata(
         self,
@@ -327,19 +297,6 @@ class ParallelWebSearchTool(BaseTool):
             query_desc = objective or f"{len(search_queries or [])} search queries"
             run_manager.on_text(f"Starting web search: {query_desc}\n", color="blue")
 
-        # Validate inputs
-        self._validate_inputs(
-            objective, search_queries, max_results, max_chars_per_result
-        )
-
-        # Get API key
-        api_key_str = get_api_key(
-            self.api_key.get_secret_value() if self.api_key else None
-        )
-
-        # Initialize search client
-        client = get_search_client(api_key_str, self.base_url)
-
         search_params = {
             "objective": objective,
             "search_queries": search_queries,
@@ -355,13 +312,14 @@ class ParallelWebSearchTool(BaseTool):
                     "Executing search...\n", color="yellow"
                 )
 
-            # Perform search
-            response = client.search(
+            # Perform search using pre-initialized client
+            response = self._client.search(
                 objective=objective,
                 search_queries=search_queries,
                 max_results=max_results,
                 max_chars_per_result=max_chars_per_result,
                 source_policy=source_policy,
+                timeout=timeout,
             )
 
             # Create metadata
@@ -425,19 +383,6 @@ class ParallelWebSearchTool(BaseTool):
                 f"Starting async web search: {query_desc}\n", color="blue"
             )
 
-        # Validate inputs
-        self._validate_inputs(
-            objective, search_queries, max_results, max_chars_per_result
-        )
-
-        # Get API key
-        api_key_str = get_api_key(
-            self.api_key.get_secret_value() if self.api_key else None
-        )
-
-        # Initialize async search client
-        client = get_async_search_client(api_key_str, self.base_url)
-
         search_params = {
             "objective": objective,
             "search_queries": search_queries,
@@ -454,13 +399,14 @@ class ParallelWebSearchTool(BaseTool):
                     color="yellow",
                 )
 
-            # Use the async client directly for better performance
-            response = await client.search(
+            # Use the pre-initialized async client for better performance
+            response = await self._async_client.search(
                 objective=objective,
                 search_queries=search_queries,
                 max_results=max_results,
                 max_chars_per_result=max_chars_per_result,
                 source_policy=source_policy,
+                timeout=timeout,
             )
 
             # Create metadata
