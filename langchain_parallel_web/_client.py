@@ -58,11 +58,9 @@ class ParallelSearchClient:
         self,
         api_key: str,
         base_url: str = "https://api.parallel.ai",
-        environment: str = "production",
     ):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
-        self.environment = environment
         # Initialize the Parallel SDK client
         self.client = Parallel(api_key=api_key, base_url=base_url)
 
@@ -103,11 +101,9 @@ class AsyncParallelSearchClient:
         self,
         api_key: str,
         base_url: str = "https://api.parallel.ai",
-        environment: str = "production",
     ):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
-        self.environment = environment
         # Initialize the Parallel SDK async client
         self.client = AsyncParallel(api_key=api_key, base_url=base_url)
 
@@ -161,11 +157,9 @@ class ParallelExtractClient:
         self,
         api_key: str,
         base_url: str = "https://api.parallel.ai",
-        environment: str = "production",
     ):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
-        self.environment = environment
         # Initialize the Parallel SDK client
         self.client = Parallel(api_key=api_key, base_url=base_url)
 
@@ -209,11 +203,9 @@ class AsyncParallelExtractClient:
         self,
         api_key: str,
         base_url: str = "https://api.parallel.ai",
-        environment: str = "production",
     ):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
-        self.environment = environment
         # Initialize the Parallel SDK async client
         self.client = AsyncParallel(api_key=api_key, base_url=base_url)
 

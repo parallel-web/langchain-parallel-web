@@ -178,14 +178,20 @@ class TestParallelExtractTool:
             ):
                 tool.invoke({"urls": ["https://example.com"]})
 
-    @patch("langchain_parallel_web._client.get_async_extract_client")
+    @patch("langchain_parallel_web.extract_tool.get_async_extract_client")
+    @patch("langchain_parallel_web.extract_tool.get_extract_client")
     @pytest.mark.asyncio
     async def test_extract_async_functionality(
-        self, mock_get_async_extract_client: Mock
+        self, mock_get_extract_client: Mock, mock_get_async_extract_client: Mock
     ) -> None:
         """Test async extraction functionality."""
-        mock_client = Mock()
-        mock_client.extract = AsyncMock(
+        # Mock sync client (needed for initialization)
+        mock_sync_client = Mock()
+        mock_get_extract_client.return_value = mock_sync_client
+
+        # Mock async client
+        mock_async_client = Mock()
+        mock_async_client.extract = AsyncMock(
             return_value={
                 "extract_id": "extract-123",
                 "results": [
@@ -198,7 +204,7 @@ class TestParallelExtractTool:
                 "errors": [],
             }
         )
-        mock_get_async_extract_client.return_value = mock_client
+        mock_get_async_extract_client.return_value = mock_async_client
 
         with patch(
             "langchain_parallel_web.extract_tool.get_api_key", return_value="test-key"

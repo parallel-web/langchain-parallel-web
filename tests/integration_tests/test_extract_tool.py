@@ -54,6 +54,47 @@ class TestParallelExtractToolIntegration:
             assert "content" in item
             # Content may be empty for some pages, so just check it exists
 
+    def test_extract_with_search_objective(self, api_key: str) -> None:
+        """Test extraction with search objective to focus content."""
+        tool = ParallelExtractTool(api_key=api_key)
+
+        result = tool.invoke(
+            {
+                "urls": ["https://en.wikipedia.org/wiki/Artificial_intelligence"],
+                "search_objective": "What are the main applications of AI?",
+                "excerpts": True,
+                "full_content": False,
+            }
+        )
+
+        assert len(result) == 1
+        assert result[0]["url"] == "https://en.wikipedia.org/wiki/Artificial_intelligence"
+        # Should have excerpts focused on the objective
+        assert "excerpts" in result[0]
+        assert isinstance(result[0]["excerpts"], list)
+        # Content should be populated from excerpts
+        assert len(result[0]["content"]) > 0
+
+    def test_extract_with_search_queries(self, api_key: str) -> None:
+        """Test extraction with search queries to focus content."""
+        tool = ParallelExtractTool(api_key=api_key)
+
+        result = tool.invoke(
+            {
+                "urls": [
+                    "https://en.wikipedia.org/wiki/Machine_learning",
+                ],
+                "search_queries": ["neural networks", "training algorithms"],
+                "excerpts": True,
+            }
+        )
+
+        assert len(result) == 1
+        # Should have excerpts focused on the queries
+        assert "excerpts" in result[0]
+        assert isinstance(result[0]["excerpts"], list)
+        assert len(result[0]["excerpts"]) > 0
+
     def test_extract_with_max_chars(self, api_key: str) -> None:
         """Test extraction with max_chars_per_extract limit."""
         tool = ParallelExtractTool(api_key=api_key, max_chars_per_extract=1000)

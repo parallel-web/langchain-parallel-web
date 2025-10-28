@@ -310,22 +310,41 @@ print(result)
 # ]
 ```
 
-### Extract from Multiple URLs
+### Extract with Search Objective
+
+Focus extraction on specific topics using search objectives:
 
 ```python
-# Extract from multiple URLs in batch
+# Extract content focused on a specific objective
+result = extract_tool.invoke({
+    "urls": ["https://en.wikipedia.org/wiki/Artificial_intelligence"],
+    "search_objective": "What are the main applications and ethical concerns of AI?",
+    "excerpts": True,
+    "full_content": False
+})
+
+# Returns relevant excerpts focused on the objective
+print(result[0]["excerpts"])  # List of relevant text excerpts
+```
+
+### Extract with Search Queries
+
+Extract content relevant to specific search queries:
+
+```python
+# Extract content focused on specific queries
 result = extract_tool.invoke({
     "urls": [
         "https://en.wikipedia.org/wiki/Machine_learning",
-        "https://en.wikipedia.org/wiki/Deep_learning",
-        "https://en.wikipedia.org/wiki/Natural_language_processing"
-    ]
+        "https://en.wikipedia.org/wiki/Deep_learning"
+    ],
+    "search_queries": ["neural networks", "training algorithms", "applications"],
+    "excerpts": True
 })
 
 for item in result:
     print(f"Title: {item['title']}")
-    print(f"URL: {item['url']}")
-    print(f"Content length: {len(item['content'])} characters")
+    print(f"Relevant excerpts: {len(item['excerpts'])}")
     print()
 ```
 
@@ -347,7 +366,12 @@ print(f"Content length: {len(result[0]['content'])} characters")
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `urls` | `List[str]` | Required | List of URLs to extract content from |
-| `max_chars_per_extract` | `Optional[int]` | `None` | Maximum characters per extraction |
+| `search_objective` | `Optional[str]` | `None` | Natural language objective to focus extraction |
+| `search_queries` | `Optional[List[str]]` | `None` | Specific keyword queries to focus extraction |
+| `excerpts` | `Union[bool, ExcerptSettings]` | `True` | Include relevant excerpts (focused on objective/queries if provided) |
+| `full_content` | `Union[bool, FullContentSettings]` | `False` | Include full page content |
+| `fetch_policy` | `Optional[FetchPolicy]` | `None` | Cache vs live content policy |
+| `max_chars_per_extract` | `Optional[int]` | `None` | Maximum characters per extraction (tool-level setting) |
 | `api_key` | `Optional[SecretStr]` | `None` | API key (uses env var if not provided) |
 | `base_url` | `str` | `"https://api.parallel.ai"` | API base URL |
 

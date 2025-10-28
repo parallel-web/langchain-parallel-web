@@ -8,7 +8,7 @@ from langchain_core.callbacks import CallbackManagerForToolRun
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, SecretStr, model_validator
 
-from ._client import get_api_key, get_extract_client
+from ._client import get_api_key, get_async_extract_client, get_extract_client
 
 
 class ExcerptSettings(BaseModel):
@@ -186,21 +186,121 @@ class ParallelExtractTool(BaseTool):
     max_chars_per_extract: Optional[int] = None
     """Maximum characters per extracted result."""
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_environment(cls, values: dict) -> Any:
-        """Validate the environment."""
+    _client: Any = None
+    """Synchronous extract client (initialized after validation)."""
+
+    _async_client: Any = None
+    """Asynchronous extract client (initialized after validation)."""
+
+    @model_validator(mode="after")
+    def validate_environment(self) -> ParallelExtractTool:
+        """Validate the environment and initialize clients."""
         # Get API key from parameter or environment
-        api_key = values.get("api_key")
-        if isinstance(api_key, SecretStr):
-            api_key_str: Optional[str] = api_key.get_secret_value()
-        else:
-            api_key_str = api_key
+        api_key_str = get_api_key(
+            self.api_key.get_secret_value() if self.api_key else None
+        )
 
-        # This will raise an error if API key is not found
-        get_api_key(api_key_str)
+        # Initialize both sync and async clients once
+        self._client = get_extract_client(api_key_str, self.base_url)
+        self._async_client = get_async_extract_client(api_key_str, self.base_url)
 
-        return values
+        return self
+
+    def _prepare_extract_params(
+        self,
+        excerpts: Union[bool, ExcerptSettings],
+        full_content: Union[bool, FullContentSettings],
+        fetch_policy: Optional[FetchPolicy],
+    ) -> tuple[Any, Any, Optional[dict[str, Any]]]:
+        """Prepare parameters for extract API call.
+
+        Args:
+            excerpts: Include excerpts (boolean or ExcerptSettings)
+            full_content: Include full content (boolean or FullContentSettings)
+            fetch_policy: Optional fetch policy for cache vs live content
+
+        Returns:
+            Tuple of (excerpts_param, full_content_param, fetch_policy_param)
+        """
+        # Build full_content config
+        full_content_param = full_content
+        if self.max_chars_per_extract and isinstance(full_content, bool):
+            # Use tool-level config if full_content is just a boolean
+            full_content_param = {
+                "max_chars_per_result": self.max_chars_per_extract
+            }
+        elif isinstance(full_content, FullContentSettings):
+            full_content_param = full_content.model_dump(exclude_none=True)
+
+        # Build excerpts config
+        excerpts_param = excerpts
+        if isinstance(excerpts, ExcerptSettings):
+            excerpts_param = excerpts.model_dump(exclude_none=True)
+
+        # Build fetch_policy config
+        fetch_policy_param = None
+        if fetch_policy:
+            fetch_policy_param = fetch_policy.model_dump(exclude_none=True)
+
+        return excerpts_param, full_content_param, fetch_policy_param
+
+    def _format_extract_response(
+        self, extract_response: dict[str, Any]
+    ) -> list[dict[str, Any]]:
+        """Format the extract API response.
+
+        Args:
+            extract_response: Raw response from the extract API
+
+        Returns:
+            List of formatted result dictionaries
+        """
+        results = extract_response.get("results", [])
+        errors = extract_response.get("errors", [])
+
+        # Format results
+        formatted_results = []
+        for result in results:
+            formatted_result = {
+                "url": result.get("url"),
+                "title": result.get("title"),
+            }
+
+            # Add excerpts if present
+            if "excerpts" in result and result["excerpts"] is not None:
+                formatted_result["excerpts"] = result["excerpts"]
+                # Combine excerpts into content field for backward compatibility
+                if "full_content" not in result:
+                    # Excerpts are a list of strings, join them with newlines
+                    formatted_result["content"] = "\n\n".join(result["excerpts"])
+
+            # Add full_content if present
+            if "full_content" in result:
+                formatted_result["full_content"] = result["full_content"]
+                # For backward compatibility, also set as "content"
+                formatted_result["content"] = result["full_content"]
+
+            # Add optional fields if present
+            if "publish_date" in result:
+                formatted_result["publish_date"] = result["publish_date"]
+
+            formatted_results.append(formatted_result)
+
+        # If there were errors, add them to the results with error info
+        formatted_results.extend(
+            [
+                {
+                    "url": error.get("url"),
+                    "title": None,
+                    "content": f"Error: {error.get('error_type', 'Unknown error')}",
+                    "error_type": error.get("error_type"),
+                    "http_status_code": error.get("http_status_code"),
+                }
+                for error in errors
+            ]
+        )
+
+        return formatted_results
 
     def _run(
         self,
@@ -227,36 +327,13 @@ class ParallelExtractTool(BaseTool):
             List of dictionaries with extracted content
         """
         try:
-            # Get API key
-            api_key_str = get_api_key(
-                self.api_key.get_secret_value() if self.api_key else None
+            # Prepare parameters for the extract API call
+            excerpts_param, full_content_param, fetch_policy_param = (
+                self._prepare_extract_params(excerpts, full_content, fetch_policy)
             )
 
-            # Initialize extract client
-            client = get_extract_client(api_key_str, self.base_url)
-
-            # Build full_content config
-            full_content_param = full_content
-            if self.max_chars_per_extract and isinstance(full_content, bool):
-                # Use tool-level config if full_content is just a boolean
-                full_content_param = {
-                    "max_chars_per_result": self.max_chars_per_extract
-                }
-            elif isinstance(full_content, FullContentSettings):
-                full_content_param = full_content.model_dump(exclude_none=True)
-
-            # Build excerpts config
-            excerpts_param = excerpts
-            if isinstance(excerpts, ExcerptSettings):
-                excerpts_param = excerpts.model_dump(exclude_none=True)
-
-            # Build fetch_policy config
-            fetch_policy_param = None
-            if fetch_policy:
-                fetch_policy_param = fetch_policy.model_dump(exclude_none=True)
-
-            # Extract content from URLs
-            extract_response = client.extract(
+            # Extract content from URLs using the pre-initialized client
+            extract_response = self._client.extract(
                 urls=urls,
                 objective=search_objective,
                 search_queries=search_queries,
@@ -265,52 +342,8 @@ class ParallelExtractTool(BaseTool):
                 fetch_policy=fetch_policy_param,
             )
 
-            results = extract_response.get("results", [])
-            errors = extract_response.get("errors", [])
-
-            # Format results
-            formatted_results = []
-            for result in results:
-                formatted_result = {
-                    "url": result.get("url"),
-                    "title": result.get("title"),
-                }
-
-                # Add excerpts if present
-                if "excerpts" in result and result["excerpts"] is not None:
-                    formatted_result["excerpts"] = result["excerpts"]
-                    # Combine excerpts into content field for backward compatibility
-                    if "full_content" not in result:
-                        # Excerpts are a list of strings, join them with newlines
-                        formatted_result["content"] = "\n\n".join(result["excerpts"])
-
-                # Add full_content if present
-                if "full_content" in result:
-                    formatted_result["full_content"] = result["full_content"]
-                    # For backward compatibility, also set as "content"
-                    formatted_result["content"] = result["full_content"]
-
-                # Add optional fields if present
-                if "publish_date" in result:
-                    formatted_result["publish_date"] = result["publish_date"]
-
-                formatted_results.append(formatted_result)
-
-            # If there were errors, add them to the results with error info
-            formatted_results.extend(
-                [
-                    {
-                        "url": error.get("url"),
-                        "title": None,
-                        "content": f"Error: {error.get('error_type', 'Unknown error')}",
-                        "error_type": error.get("error_type"),
-                        "http_status_code": error.get("http_status_code"),
-                    }
-                    for error in errors
-                ]
-            )
-
-            return formatted_results
+            # Format and return the response
+            return self._format_extract_response(extract_response)
 
         except Exception as e:
             msg = f"Error calling Parallel Extract API: {e!s}"
@@ -340,39 +373,14 @@ class ParallelExtractTool(BaseTool):
         Returns:
             List of dictionaries with extracted content
         """
-        from ._client import get_async_extract_client
-
         try:
-            # Get API key
-            api_key_str = get_api_key(
-                self.api_key.get_secret_value() if self.api_key else None
+            # Prepare parameters for the extract API call
+            excerpts_param, full_content_param, fetch_policy_param = (
+                self._prepare_extract_params(excerpts, full_content, fetch_policy)
             )
 
-            # Initialize async extract client
-            client = get_async_extract_client(api_key_str, self.base_url)
-
-            # Build full_content config
-            full_content_param = full_content
-            if self.max_chars_per_extract and isinstance(full_content, bool):
-                # Use tool-level config if full_content is just a boolean
-                full_content_param = {
-                    "max_chars_per_result": self.max_chars_per_extract
-                }
-            elif isinstance(full_content, FullContentSettings):
-                full_content_param = full_content.model_dump(exclude_none=True)
-
-            # Build excerpts config
-            excerpts_param = excerpts
-            if isinstance(excerpts, ExcerptSettings):
-                excerpts_param = excerpts.model_dump(exclude_none=True)
-
-            # Build fetch_policy config
-            fetch_policy_param = None
-            if fetch_policy:
-                fetch_policy_param = fetch_policy.model_dump(exclude_none=True)
-
-            # Extract content from URLs
-            extract_response = await client.extract(
+            # Extract content from URLs using the pre-initialized async client
+            extract_response = await self._async_client.extract(
                 urls=urls,
                 objective=search_objective,
                 search_queries=search_queries,
@@ -381,52 +389,8 @@ class ParallelExtractTool(BaseTool):
                 fetch_policy=fetch_policy_param,
             )
 
-            results = extract_response.get("results", [])
-            errors = extract_response.get("errors", [])
-
-            # Format results
-            formatted_results = []
-            for result in results:
-                formatted_result = {
-                    "url": result.get("url"),
-                    "title": result.get("title"),
-                }
-
-                # Add excerpts if present
-                if "excerpts" in result and result["excerpts"] is not None:
-                    formatted_result["excerpts"] = result["excerpts"]
-                    # Combine excerpts into content field for backward compatibility
-                    if "full_content" not in result:
-                        # Excerpts are a list of strings, join them with newlines
-                        formatted_result["content"] = "\n\n".join(result["excerpts"])
-
-                # Add full_content if present
-                if "full_content" in result:
-                    formatted_result["full_content"] = result["full_content"]
-                    # For backward compatibility, also set as "content"
-                    formatted_result["content"] = result["full_content"]
-
-                # Add optional fields if present
-                if "publish_date" in result:
-                    formatted_result["publish_date"] = result["publish_date"]
-
-                formatted_results.append(formatted_result)
-
-            # If there were errors, add them to the results with error info
-            formatted_results.extend(
-                [
-                    {
-                        "url": error.get("url"),
-                        "title": None,
-                        "content": f"Error: {error.get('error_type', 'Unknown error')}",
-                        "error_type": error.get("error_type"),
-                        "http_status_code": error.get("http_status_code"),
-                    }
-                    for error in errors
-                ]
-            )
-
-            return formatted_results
+            # Format and return the response
+            return self._format_extract_response(extract_response)
 
         except Exception as e:
             msg = f"Error calling Parallel Extract API: {e!s}"

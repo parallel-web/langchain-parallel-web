@@ -55,12 +55,56 @@ def batch_extract_examples() -> None:
         print(f"   Content length: {len(item['content'])} characters")
 
 
+def focused_extraction_examples() -> None:
+    """Examples with search objective and queries."""
+    print("\n=== Focused Extraction Examples ===")
+
+    tool = ParallelExtractTool()
+
+    # Example 3: Extract with search objective
+    print("\nExample 3: Extract with search objective")
+    result = tool.invoke(
+        {
+            "urls": ["https://en.wikipedia.org/wiki/Artificial_intelligence"],
+            "search_objective": (
+                "What are the main applications and ethical concerns of AI?"
+            ),
+            "excerpts": True,
+            "full_content": False,
+        }
+    )
+
+    print(f"Title: {result[0]['title']}")
+    print(f"Number of relevant excerpts: {len(result[0].get('excerpts', []))}")
+    print(f"Content preview: {result[0]['content'][:300]}...")
+
+    # Example 4: Extract with search queries
+    print("\nExample 4: Extract with search queries")
+    result = tool.invoke(
+        {
+            "urls": ["https://en.wikipedia.org/wiki/Machine_learning"],
+            "search_queries": [
+                "neural networks",
+                "training algorithms",
+                "applications",
+            ],
+            "excerpts": True,
+        }
+    )
+
+    print(f"Title: {result[0]['title']}")
+    print(f"Number of relevant excerpts: {len(result[0].get('excerpts', []))}")
+    print("Relevant excerpts focused on the queries:")
+    for i, excerpt in enumerate(result[0].get("excerpts", [])[:3], 1):
+        print(f"\n  Excerpt {i}: {excerpt[:150]}...")
+
+
 def content_length_control_examples() -> None:
     """Examples with content length control."""
     print("\n=== Content Length Control Examples ===")
 
-    # Example 3: Limit content length
-    print("\nExample 3: Extract with content length limit")
+    # Example 5: Limit content length
+    print("\nExample 5: Extract with content length limit")
     tool = ParallelExtractTool(max_chars_per_extract=2000)
 
     result = tool.invoke({"urls": ["https://en.wikipedia.org/wiki/Quantum_computing"]})
@@ -186,6 +230,9 @@ def main() -> None:
         # Batch extraction
         batch_extract_examples()
 
+        # Focused extraction
+        focused_extraction_examples()
+
         # Content length control
         content_length_control_examples()
 
@@ -202,6 +249,8 @@ def main() -> None:
         print("\nKey features demonstrated:")
         print("  - Single URL extraction")
         print("  - Batch extraction from multiple URLs")
+        print("  - Focused extraction with search objective")
+        print("  - Focused extraction with search queries")
         print("  - Content length control")
         print("  - Error handling for failed extractions")
         print("  - Async extraction")
