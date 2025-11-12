@@ -1,5 +1,10 @@
 from importlib import metadata
 
+from langchain_parallel_web._types import (
+    ExcerptSettings,
+    FetchPolicy,
+    FullContentSettings,
+)
 from langchain_parallel_web.chat_models import ChatParallelWeb
 from langchain_parallel_web.extract_tool import ParallelExtractTool
 from langchain_parallel_web.search_tool import ParallelWebSearchTool
@@ -13,6 +18,9 @@ del metadata  # optional, avoids polluting the results of dir(__package__)
 
 __all__ = [
     "ChatParallelWeb",
+    "ExcerptSettings",
+    "FetchPolicy",
+    "FullContentSettings",
     "ParallelExtractTool",
     "ParallelWebSearchTool",
     "__version__",

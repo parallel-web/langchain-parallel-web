@@ -63,8 +63,10 @@ class ParallelSearchClient:
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
         max_results: int = 10,
-        max_chars_per_result: int = 1500,
+        excerpts: Optional[dict[str, Any]] = None,
+        mode: Optional[str] = None,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
+        fetch_policy: Optional[dict[str, Any]] = None,
         timeout: Optional[float] = None,
     ) -> dict[str, Any]:
         """Perform a synchronous search using the Parallel Search API via SDK."""
@@ -76,16 +78,24 @@ class ParallelSearchClient:
         if timeout is None:
             timeout = 30.0
 
+        # Build kwargs, only including non-None values for optional params
+        kwargs: dict[str, Any] = {
+            "objective": objective,
+            "search_queries": search_queries,
+            "max_results": max_results,
+            "timeout": timeout,
+        }
+        if excerpts is not None:
+            kwargs["excerpts"] = excerpts
+        if mode is not None:
+            kwargs["mode"] = mode
+        if source_policy is not None:
+            kwargs["source_policy"] = source_policy
+        if fetch_policy is not None:
+            kwargs["fetch_policy"] = fetch_policy
+
         # Use the Parallel SDK's beta.search method
-        search_response = self.client.beta.search(
-            objective=objective,
-            search_queries=search_queries,
-            max_results=max_results,
-            max_chars_per_result=max_chars_per_result,
-            source_policy=source_policy,
-            betas=["search-extract-2025-10-10"],
-            timeout=timeout,
-        )
+        search_response = self.client.beta.search(**kwargs)
 
         # Convert the SDK response to a dictionary
         return search_response.model_dump()
@@ -109,8 +119,10 @@ class AsyncParallelSearchClient:
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
         max_results: int = 10,
-        max_chars_per_result: int = 1500,
+        excerpts: Optional[dict[str, Any]] = None,
+        mode: Optional[str] = None,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
+        fetch_policy: Optional[dict[str, Any]] = None,
         timeout: Optional[float] = None,
     ) -> dict[str, Any]:
         """Perform an async search using the Parallel Search API via SDK."""
@@ -122,16 +134,24 @@ class AsyncParallelSearchClient:
         if timeout is None:
             timeout = 30.0
 
+        # Build kwargs, only including non-None values for optional params
+        kwargs: dict[str, Any] = {
+            "objective": objective,
+            "search_queries": search_queries,
+            "max_results": max_results,
+            "timeout": timeout,
+        }
+        if excerpts is not None:
+            kwargs["excerpts"] = excerpts
+        if mode is not None:
+            kwargs["mode"] = mode
+        if source_policy is not None:
+            kwargs["source_policy"] = source_policy
+        if fetch_policy is not None:
+            kwargs["fetch_policy"] = fetch_policy
+
         # Use the Parallel SDK's beta.search method
-        search_response = await self.client.beta.search(
-            objective=objective,
-            search_queries=search_queries,
-            max_results=max_results,
-            max_chars_per_result=max_chars_per_result,
-            source_policy=source_policy,
-            betas=["search-extract-2025-10-10"],
-            timeout=timeout,
-        )
+        search_response = await self.client.beta.search(**kwargs)
 
         # Convert the SDK response to a dictionary
         return search_response.model_dump()
@@ -191,7 +211,6 @@ class ParallelExtractClient:
             excerpts=excerpts,
             full_content=full_content,
             fetch_policy=fetch_policy,
-            betas=["search-extract-2025-10-10"],
             timeout=timeout,
         )
 
@@ -239,7 +258,6 @@ class AsyncParallelExtractClient:
             excerpts=excerpts,
             full_content=full_content,
             fetch_policy=fetch_policy,
-            betas=["search-extract-2025-10-10"],
             timeout=timeout,
         )
 
