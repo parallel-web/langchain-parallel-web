@@ -63,8 +63,10 @@ class ParallelSearchClient:
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
         max_results: int = 10,
-        max_chars_per_result: int = 1500,
+        excerpts: Optional[dict[str, Any]] = None,
+        mode: Optional[str] = None,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
+        fetch_policy: Optional[dict[str, Any]] = None,
         timeout: Optional[float] = None,
     ) -> dict[str, Any]:
         """Perform a synchronous search using the Parallel Search API via SDK."""
@@ -81,9 +83,10 @@ class ParallelSearchClient:
             objective=objective,
             search_queries=search_queries,
             max_results=max_results,
-            max_chars_per_result=max_chars_per_result,
+            excerpts=excerpts,
+            mode=mode,
             source_policy=source_policy,
-            betas=["search-extract-2025-10-10"],
+            fetch_policy=fetch_policy,
             timeout=timeout,
         )
 
@@ -109,8 +112,10 @@ class AsyncParallelSearchClient:
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
         max_results: int = 10,
-        max_chars_per_result: int = 1500,
+        excerpts: Optional[dict[str, Any]] = None,
+        mode: Optional[str] = None,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
+        fetch_policy: Optional[dict[str, Any]] = None,
         timeout: Optional[float] = None,
     ) -> dict[str, Any]:
         """Perform an async search using the Parallel Search API via SDK."""
@@ -127,9 +132,10 @@ class AsyncParallelSearchClient:
             objective=objective,
             search_queries=search_queries,
             max_results=max_results,
-            max_chars_per_result=max_chars_per_result,
+            excerpts=excerpts,
+            mode=mode,
             source_policy=source_policy,
-            betas=["search-extract-2025-10-10"],
+            fetch_policy=fetch_policy,
             timeout=timeout,
         )
 
@@ -191,7 +197,6 @@ class ParallelExtractClient:
             excerpts=excerpts,
             full_content=full_content,
             fetch_policy=fetch_policy,
-            betas=["search-extract-2025-10-10"],
             timeout=timeout,
         )
 
@@ -239,7 +244,6 @@ class AsyncParallelExtractClient:
             excerpts=excerpts,
             full_content=full_content,
             fetch_policy=fetch_policy,
-            betas=["search-extract-2025-10-10"],
             timeout=timeout,
         )
 

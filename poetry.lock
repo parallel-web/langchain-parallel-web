@@ -1247,14 +1247,14 @@ files = [
 
 [[package]]
 name = "parallel-web"
-version = "0.3.2"
+version = "0.3.3"
 description = "The official Python library for the Parallel API"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "parallel_web-0.3.2-py3-none-any.whl", hash = "sha256:1c6a214d21995c391f7193f40639650e08bf4063630c44687c2437c131124341"},
-    {file = "parallel_web-0.3.2.tar.gz", hash = "sha256:96f16a71fae26be473798ec638ec2ea2b15427fc6640d160ffd9510d24aa0022"},
+    {file = "parallel_web-0.3.3-py3-none-any.whl", hash = "sha256:730187f8754c81bbdb7f3d06c5c44b6df25d665366c051f34409ab04aad69570"},
+    {file = "parallel_web-0.3.3.tar.gz", hash = "sha256:31a33ae094182887d731390468d816a52dc76a7f462f8e00b91477098cb00e50"},
 ]
 
 [package.dependencies]
@@ -2602,4 +2602,4 @@ cffi = ["cffi (>=1.17,<2.0)", "cffi (>=2.0.0b)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<4.0"
-content-hash = "2b4276c064f18556146307930b2df2a5d24baaf662f2f4050558a772ceca9a87"
+content-hash = "d1189e86399bb094efffd9686ecd26cc3e9a04eb54e1434d66925b83837cb4dc"

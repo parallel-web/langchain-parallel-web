@@ -57,8 +57,8 @@ def search_examples() -> None:
 
     search_tool = ParallelWebSearchTool()
 
-    # Example 3: Academic search with domain filtering
-    print("\nExample 3: Academic search with domain filtering")
+    # Example 3: Academic search with domain filtering and fetch policy
+    print("\nExample 3: Academic search with domain filtering and fetch policy")
     result3 = search_tool.invoke(
         {
             "objective": "Latest climate change research and findings",
@@ -67,7 +67,12 @@ def search_examples() -> None:
                 "exclude_domains": ["reddit.com", "twitter.com", "facebook.com"],
             },
             "max_results": 5,
-            "max_chars_per_result": 2000,  # Longer excerpts
+            "excerpts": {"max_chars_per_result": 2000},  # Longer excerpts
+            "mode": "one-shot",  # Comprehensive results
+            "fetch_policy": {
+                "max_age_seconds": 86400,  # Cache content for 1 day
+                "timeout_seconds": 60,  # 60 second timeout for live fetches
+            },
             "include_metadata": True,
         }
     )
@@ -76,8 +81,8 @@ def search_examples() -> None:
     display_results(result3, max_results=2, show_excerpts=True)
     display_metadata(result3)
 
-    # Example 4: Multiple topic news search
-    print("\nExample 4: Multiple topic news search")
+    # Example 4: Multiple topic news search with agentic mode
+    print("\nExample 4: Multiple topic news search with agentic mode")
     result4 = search_tool.invoke(
         {
             "search_queries": [
@@ -86,6 +91,7 @@ def search_examples() -> None:
                 "AI company acquisitions",
             ],
             "max_results": 6,
+            "mode": "agentic",  # Token-efficient, concise results
             "include_metadata": True,
         }
     )
@@ -199,7 +205,7 @@ def practical_use_cases() -> None:
                 "exclude_domains": ["blog.com", "personal-site.com"],
             },
             "max_results": 10,
-            "max_chars_per_result": 2500,
+            "excerpts": {"max_chars_per_result": 2500},
             "include_metadata": True,
         }
     )
@@ -285,6 +291,8 @@ async def main() -> None:
         print("  - Basic objective and query-based searches")
         print("  - Multi-query search capabilities")
         print("  - Domain filtering with source policies")
+        print("  - Fetch policies for cache control")
+        print("  - Search modes: one-shot and agentic")
         print("  - Async search execution")
         print("  - Parallel search processing")
         print("  - Metadata collection")

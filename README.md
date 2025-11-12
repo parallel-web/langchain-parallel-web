@@ -223,7 +223,9 @@ print(result)
 | `objective` | `Optional[str]` | `None` | Natural-language description of research goal |
 | `search_queries` | `Optional[List[str]]` | `None` | Specific search queries (max 5, 200 chars each) |
 | `max_results` | `int` | `10` | Maximum results to return (1-40) |
-| `max_chars_per_result` | `int` | `1500` | Maximum characters per result (min 100) |
+| `excerpts` | `Optional[dict]` | `None` | Excerpt settings (e.g., {'max_chars_per_result': 1500}) |
+| `mode` | `Optional[str]` | `None` | Search mode: 'one-shot' for comprehensive results, 'agentic' for token-efficient results |
+| `fetch_policy` | `Optional[dict]` | `None` | Policy for cached vs live content (e.g., {'max_age_seconds': 86400, 'timeout_seconds': 60}) |
 | `api_key` | `Optional[SecretStr]` | `None` | API key (uses env var if not provided) |
 | `base_url` | `str` | `"https://api.parallel.ai"` | API base URL |
 
@@ -485,7 +487,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ### Documentation
 - [Parallel Documentation](https://docs.parallel.ai/)
 - [Chat API Reference](https://docs.parallel.ai/chat-api)
-- [Search API Reference](https://docs.parallel.ai/search-api)
+- [Search API Reference](https://docs.parallel.ai/search/search-quickstart)
 - [LangChain Documentation](https://python.langchain.com/)
 
 ### Getting Help
