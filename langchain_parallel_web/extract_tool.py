@@ -12,56 +12,7 @@ from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, SecretStr, model_validator
 
 from ._client import get_api_key, get_async_extract_client, get_extract_client
-
-
-class ExcerptSettings(BaseModel):
-    """Settings for excerpt extraction."""
-
-    max_chars_per_result: Optional[int] = Field(
-        default=None,
-        description=(
-            "Optional upper bound on the total number of characters to include "
-            "across all excerpts for each url."
-        ),
-    )
-
-
-class FullContentSettings(BaseModel):
-    """Settings for full content extraction."""
-
-    max_chars_per_result: Optional[int] = Field(
-        default=None,
-        description=(
-            "Optional limit on the number of characters to include in the full "
-            "content for each url."
-        ),
-    )
-
-
-class FetchPolicy(BaseModel):
-    """Fetch policy for cache vs live content."""
-
-    max_age_seconds: Optional[int] = Field(
-        default=None,
-        description=(
-            "Maximum age of cached content in seconds. Minimum 600 seconds. "
-            "If not provided, dynamic age policy will be used."
-        ),
-    )
-    timeout_seconds: Optional[float] = Field(
-        default=None,
-        description=(
-            "Timeout in seconds for fetching live content. If unspecified, "
-            "dynamic timeout will be used (15-60 seconds)."
-        ),
-    )
-    disable_cache_fallback: bool = Field(
-        default=False,
-        description=(
-            "If false, fallback to cached content if live fetch fails. "
-            "If true, returns an error instead."
-        ),
-    )
+from ._types import ExcerptSettings, FetchPolicy, FullContentSettings
 
 
 class ParallelExtractInput(BaseModel):

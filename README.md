@@ -302,17 +302,22 @@ print(result)
 # ]
 ```
 
-### Extract with Search Objective
+### Extract with Search Objective and Advanced Options
 
-Focus extraction on specific topics using search objectives:
+Focus extraction on specific topics using search objectives, with control over excerpts and fetch policy:
 
 ```python
-# Extract content focused on a specific objective
+# Extract content focused on a specific objective with excerpt settings
 result = extract_tool.invoke({
     "urls": ["https://en.wikipedia.org/wiki/Artificial_intelligence"],
     "search_objective": "What are the main applications and ethical concerns of AI?",
-    "excerpts": True,
-    "full_content": False
+    "excerpts": {"max_chars_per_result": 2000},
+    "full_content": False,
+    "fetch_policy": {
+        "max_age_seconds": 86400,
+        "timeout_seconds": 60,
+        "disable_cache_fallback": False
+    }
 })
 
 # Returns relevant excerpts focused on the objective
@@ -343,11 +348,10 @@ for item in result:
 ### Content Length Control
 
 ```python
-# Control content length per extraction
-extract_tool = ParallelExtractTool(max_chars_per_extract=2000)
-
+# Control full content length per extraction
 result = extract_tool.invoke({
-    "urls": ["https://en.wikipedia.org/wiki/Quantum_computing"]
+    "urls": ["https://en.wikipedia.org/wiki/Quantum_computing"],
+    "full_content": {"max_chars_per_result": 3000}
 })
 
 print(f"Content length: {len(result[0]['content'])} characters")

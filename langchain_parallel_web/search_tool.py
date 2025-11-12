@@ -13,6 +13,7 @@ from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, SecretStr, model_validator
 
 from ._client import get_api_key, get_async_search_client, get_search_client
+from ._types import ExcerptSettings, FetchPolicy
 
 
 class ParallelWebSearchInput(BaseModel):
@@ -33,11 +34,11 @@ class ParallelWebSearchInput(BaseModel):
     max_results: int = Field(
         default=10, description="Maximum number of search results to return (1 to 40)."
     )
-    excerpts: Optional[dict[str, Any]] = Field(
+    excerpts: Optional[ExcerptSettings] = Field(
         default=None,
         description=(
-            "Optional excerpt settings. "
-            "Example: {'max_chars_per_result': 1500}"
+            "Optional excerpt settings for controlling excerpt length. "
+            "Example: ExcerptSettings(max_chars_per_result=1500)"
         ),
     )
     mode: Optional[str] = Field(
@@ -56,12 +57,11 @@ class ParallelWebSearchInput(BaseModel):
             "{'include_domains': ['wikipedia.org'], 'exclude_domains': ['reddit.com']}"
         ),
     )
-    fetch_policy: Optional[dict[str, Any]] = Field(
+    fetch_policy: Optional[FetchPolicy] = Field(
         default=None,
         description=(
             "Optional fetch policy to control when to return cached vs live "
-            "content. Example: {'max_age_seconds': 86400, "
-            "'timeout_seconds': 60, 'disable_cache_fallback': False}"
+            "content. Example: FetchPolicy(max_age_seconds=86400, timeout_seconds=60)"
         ),
     )
     include_metadata: bool = Field(
@@ -131,7 +131,7 @@ class ParallelWebSearchTool(BaseTool):
     Domain filtering and advanced options:
         .. code-block:: python
 
-            # Domain filtering with fetch policy
+            # Domain filtering with fetch policy (using dict format)
             result = tool.invoke({
                 "objective": "Recent climate change research",
                 "source_policy": {
@@ -139,13 +139,22 @@ class ParallelWebSearchTool(BaseTool):
                     "exclude_domains": ["reddit.com", "twitter.com"]
                 },
                 "max_results": 15,
-                "excerpts": {"max_chars_per_result": 2000},
+                "excerpts": {"max_chars_per_result": 2000},  # Auto-converted
                 "mode": "one-shot",  # Use 'agentic' for token-efficient results
-                "fetch_policy": {
+                "fetch_policy": {  # Auto-converted to FetchPolicy
                     "max_age_seconds": 86400,  # 1 day cache
                     "timeout_seconds": 60
                 },
-                "include_metadata": True    # Include search timing/stats
+                "include_metadata": True
+            })
+
+            # Or use the types directly
+            from langchain_parallel_web import ExcerptSettings, FetchPolicy
+
+            result = tool.invoke({
+                "objective": "Recent climate change research",
+                "excerpts": ExcerptSettings(max_chars_per_result=2000),
+                "fetch_policy": FetchPolicy(max_age_seconds=86400, timeout_seconds=60),
             })
 
     Async Usage:
@@ -294,10 +303,10 @@ class ParallelWebSearchTool(BaseTool):
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
         max_results: int = 10,
-        excerpts: Optional[dict[str, Any]] = None,
+        excerpts: Optional[ExcerptSettings] = None,
         mode: Optional[str] = None,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
-        fetch_policy: Optional[dict[str, Any]] = None,
+        fetch_policy: Optional[FetchPolicy] = None,
         *,
         include_metadata: bool = True,
         timeout: Optional[int] = None,
@@ -309,11 +318,10 @@ class ParallelWebSearchTool(BaseTool):
             objective: Natural-language description of the research goal
             search_queries: List of specific search queries
             max_results: Maximum number of results (1-40)
-            excerpts: Optional excerpt settings dict
-                (e.g., {'max_chars_per_result': 1500})
+            excerpts: Optional ExcerptSettings for controlling excerpt length
             mode: Search mode ('one-shot' or 'agentic')
             source_policy: Optional source policy for domain filtering
-            fetch_policy: Optional fetch policy for cache vs live content
+            fetch_policy: Optional FetchPolicy for cache vs live content
             include_metadata: Whether to include metadata
             timeout: Request timeout in seconds
             run_manager: Callback manager for the tool run
@@ -328,14 +336,20 @@ class ParallelWebSearchTool(BaseTool):
             query_desc = objective or f"{len(search_queries or [])} search queries"
             run_manager.on_text(f"Starting web search: {query_desc}\n", color="blue")
 
+        # Convert ExcerptSettings and FetchPolicy to dict if provided
+        excerpts_dict = excerpts.model_dump(exclude_none=True) if excerpts else None
+        fetch_policy_dict = (
+            fetch_policy.model_dump(exclude_none=True) if fetch_policy else None
+        )
+
         search_params = {
             "objective": objective,
             "search_queries": search_queries,
             "max_results": max_results,
-            "excerpts": excerpts,
+            "excerpts": excerpts_dict,
             "mode": mode,
             "source_policy": source_policy,
-            "fetch_policy": fetch_policy,
+            "fetch_policy": fetch_policy_dict,
         }
 
         try:
@@ -348,10 +362,10 @@ class ParallelWebSearchTool(BaseTool):
                 objective=objective,
                 search_queries=search_queries,
                 max_results=max_results,
-                excerpts=excerpts,
+                excerpts=excerpts_dict,
                 mode=mode,
                 source_policy=source_policy,
-                fetch_policy=fetch_policy,
+                fetch_policy=fetch_policy_dict,
                 timeout=timeout,
             )
 
@@ -385,10 +399,10 @@ class ParallelWebSearchTool(BaseTool):
         objective: Optional[str] = None,
         search_queries: Optional[list[str]] = None,
         max_results: int = 10,
-        excerpts: Optional[dict[str, Any]] = None,
+        excerpts: Optional[ExcerptSettings] = None,
         mode: Optional[str] = None,
         source_policy: Optional[dict[str, Union[str, list[str]]]] = None,
-        fetch_policy: Optional[dict[str, Any]] = None,
+        fetch_policy: Optional[FetchPolicy] = None,
         *,
         include_metadata: bool = True,
         timeout: Optional[int] = None,
@@ -400,11 +414,10 @@ class ParallelWebSearchTool(BaseTool):
             objective: Natural-language description of the research goal
             search_queries: List of specific search queries
             max_results: Maximum number of results (1-40)
-            excerpts: Optional excerpt settings dict
-                (e.g., {'max_chars_per_result': 1500})
+            excerpts: Optional ExcerptSettings for controlling excerpt length
             mode: Search mode ('one-shot' or 'agentic')
             source_policy: Optional source policy for domain filtering
-            fetch_policy: Optional fetch policy for cache vs live content
+            fetch_policy: Optional FetchPolicy for cache vs live content
             include_metadata: Whether to include metadata
             timeout: Request timeout in seconds
             run_manager: Async callback manager for the tool run
@@ -421,14 +434,20 @@ class ParallelWebSearchTool(BaseTool):
                 f"Starting async web search: {query_desc}\n", color="blue"
             )
 
+        # Convert ExcerptSettings and FetchPolicy to dict if provided
+        excerpts_dict = excerpts.model_dump(exclude_none=True) if excerpts else None
+        fetch_policy_dict = (
+            fetch_policy.model_dump(exclude_none=True) if fetch_policy else None
+        )
+
         search_params = {
             "objective": objective,
             "search_queries": search_queries,
             "max_results": max_results,
-            "excerpts": excerpts,
+            "excerpts": excerpts_dict,
             "mode": mode,
             "source_policy": source_policy,
-            "fetch_policy": fetch_policy,
+            "fetch_policy": fetch_policy_dict,
         }
 
         try:
@@ -444,10 +463,10 @@ class ParallelWebSearchTool(BaseTool):
                 objective=objective,
                 search_queries=search_queries,
                 max_results=max_results,
-                excerpts=excerpts,
+                excerpts=excerpts_dict,
                 mode=mode,
                 source_policy=source_policy,
-                fetch_policy=fetch_policy,
+                fetch_policy=fetch_policy_dict,
                 timeout=timeout,
             )
 
