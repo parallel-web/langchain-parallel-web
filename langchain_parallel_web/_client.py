@@ -78,17 +78,24 @@ class ParallelSearchClient:
         if timeout is None:
             timeout = 30.0
 
+        # Build kwargs, only including non-None values for optional params
+        kwargs: dict[str, Any] = {
+            "objective": objective,
+            "search_queries": search_queries,
+            "max_results": max_results,
+            "timeout": timeout,
+        }
+        if excerpts is not None:
+            kwargs["excerpts"] = excerpts
+        if mode is not None:
+            kwargs["mode"] = mode
+        if source_policy is not None:
+            kwargs["source_policy"] = source_policy
+        if fetch_policy is not None:
+            kwargs["fetch_policy"] = fetch_policy
+
         # Use the Parallel SDK's beta.search method
-        search_response = self.client.beta.search(
-            objective=objective,
-            search_queries=search_queries,
-            max_results=max_results,
-            excerpts=excerpts,
-            mode=mode,
-            source_policy=source_policy,
-            fetch_policy=fetch_policy,
-            timeout=timeout,
-        )
+        search_response = self.client.beta.search(**kwargs)
 
         # Convert the SDK response to a dictionary
         return search_response.model_dump()
@@ -127,17 +134,24 @@ class AsyncParallelSearchClient:
         if timeout is None:
             timeout = 30.0
 
+        # Build kwargs, only including non-None values for optional params
+        kwargs: dict[str, Any] = {
+            "objective": objective,
+            "search_queries": search_queries,
+            "max_results": max_results,
+            "timeout": timeout,
+        }
+        if excerpts is not None:
+            kwargs["excerpts"] = excerpts
+        if mode is not None:
+            kwargs["mode"] = mode
+        if source_policy is not None:
+            kwargs["source_policy"] = source_policy
+        if fetch_policy is not None:
+            kwargs["fetch_policy"] = fetch_policy
+
         # Use the Parallel SDK's beta.search method
-        search_response = await self.client.beta.search(
-            objective=objective,
-            search_queries=search_queries,
-            max_results=max_results,
-            excerpts=excerpts,
-            mode=mode,
-            source_policy=source_policy,
-            fetch_policy=fetch_policy,
-            timeout=timeout,
-        )
+        search_response = await self.client.beta.search(**kwargs)
 
         # Convert the SDK response to a dictionary
         return search_response.model_dump()
