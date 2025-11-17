@@ -1,3 +1,5 @@
+Please use https://github.com/parallel-web/langchain-parallel instead.
+
 # LangChain Parallel Web Integration
 
 This package provides LangChain integrations for [Parallel](https://docs.parallel.ai/), enabling real-time web research and AI capabilities through an OpenAI-compatible interface.
